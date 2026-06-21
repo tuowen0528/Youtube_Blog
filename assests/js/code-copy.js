@@ -4,7 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
   codeBlocks.forEach((code) => {
     const container = code.parentElement;
 
-    if (!container || container.querySelector(".copy-code-button")) {
+    if (!container) {
+      return;
+    }
+
+    container.classList.add("code-block");
+
+    if (container.querySelector(".copy-code-button")) {
       return;
     }
 
