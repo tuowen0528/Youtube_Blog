@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="GitHub Pages 免费建站教程：从检查静态网站文件、创建 GitHub 仓库、上传网站、启用 Pages，到通过 Cloudflare DNS 绑定自己的子域名，并说明后续如何更新网站。"
+    >
+    <meta name="theme-color" content="#f7f6f3">
+    <title>GitHub Pages 免费建站教程：6分钟部署网站＋绑定自己的域名（小白也能学会）</title>
+    <link rel="icon" href="../../assests/images/channel-avatar.jpg" type="image/jpeg">
+    <link rel="stylesheet" href="../../assests/css/style.css">
+    <script src="../../assests/js/code-copy.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#article-content">跳到文章正文</a>
+
+    <header class="article-header">
+      <a class="back-link" href="../../index.html">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M16 10H5M9 6l-4 4 4 4"/>
+        </svg>
+        返回全部教程
+      </a>
+      <a
+        class="channel-link"
+        href="https://www.youtube.com/@TuoWen-0528"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Tuo Wen
+      </a>
+    </header>
+
+    <main class="article-layout" id="article-content">
+      <article class="article">
+        <header class="article-hero">
+          <p class="eyebrow">GitHub Pages · 静态网站 · 自定义域名</p>
+          <h1>GitHub Pages 免费建站教程：6分钟部署网站＋绑定自己的域名（小白也能学会）</h1>
+          <p class="article-lead">
+            想免费部署自己的网站，又不想购买服务器？本期用 GitHub Pages 演示如何从零上线静态网站，
+            并通过 Cloudflare 绑定自己的域名。适合个人主页、博客、产品介绍页和文档网站；
+            需要后台或数据库的网站不适用。
+          </p>
+          <div class="article-meta">
+            <span>发布于 2026 年 6 月 21 日</span>
+            <span>视频时长 6:28</span>
+            <span>适用于纯静态网站</span>
+          </div>
+          <a
+            class="video-link"
+            href="https://youtu.be/d34RiZiFJ-w"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            在 YouTube 观看本期视频
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 10h11M11 6l4 4-4 4"/>
+            </svg>
+          </a>
+        </header>
+
+        <div class="notice">
+          <strong>这套方法适合什么网站：</strong>
+          GitHub Pages 用于托管 HTML、CSS、JavaScript、图片等静态文件，适合个人博客、作品集、
+          产品介绍页和文档站。需要 PHP、Python、Node.js 服务端程序、数据库或复杂后台的网站，
+          不能只靠 GitHub Pages 运行。
+        </div>
+
+        <section class="article-section" id="preparation">
+          <h2>开始前要准备什么</h2>
+          <ul class="check-list">
+            <li>一个可以正常登录的 GitHub 账户。</li>
+            <li>已经制作完成的静态网站文件，并确保入口文件名为 <code>index.html</code>。</li>
+            <li>如果要绑定自己的域名，需要拥有一个域名，并能修改它的 DNS 记录。</li>
+            <li>视频使用 Cloudflare 管理域名 DNS；使用其他 DNS 服务商时，字段含义相同，界面会不同。</li>
+            <li>准备一个现代浏览器，用于本地预览、配置 GitHub 和检查最终网站。</li>
+          </ul>
+
+          <div class="warning">
+            <strong>发布前先清理敏感信息。</strong>
+            GitHub Pages 网站可以被公网访问。不要上传密码、API 密钥、Cookie、私人照片原件、
+            数据库文件或包含个人隐私的配置。GitHub Free 用户通常还需要使用公开仓库来部署 Pages。
+          </div>
+
+          <div class="resource-box">
+            <h3>本期会用到的网址</h3>
+            <ul>
+              <li>
+                <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
+                  GitHub 官网
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub Pages 创建网站官方文档
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub Pages 自定义域名官方文档
+                </a>
+              </li>
+              <li>
+                <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
+                  Cloudflare 控制台
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://developers.cloudflare.com/dns/manage-dns-records/how-to/create-dns-records/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Cloudflare DNS 记录官方文档
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <nav class="article-toc" aria-labelledby="toc-title">
+          <h2 id="toc-title">视频时间轴</h2>
+          <ol>
+            <li><a href="#scope"><time>00:00</time>免费部署网站方案</a></li>
+            <li><a href="#check-site"><time>00:42</time>准备网站文件与 index.html</a></li>
+            <li><a href="#create-repository"><time>00:58</time>上传网站到 GitHub</a></li>
+            <li><a href="#enable-pages"><time>02:10</time>开启 GitHub Pages</a></li>
+            <li><a href="#visit-default-site"><time>02:39</time>检查网站是否上线</a></li>
+            <li><a href="#custom-domain"><time>02:55</time>绑定自己的域名</a></li>
+            <li><a href="#cloudflare-dns"><time>03:42</time>Cloudflare 添加 CNAME 记录</a></li>
+            <li><a href="#dns-check"><time>04:45</time>DNS 验证与域名访问</a></li>
+            <li><a href="#update-site"><time>05:09</time>更新网站内容</a></li>
+            <li><a href="#references"><time>06:19</time>总结</a></li>
+          </ol>
+        </nav>
+
+        <section class="article-section" id="scope">
+          <div class="section-title-row">
+            <span class="timestamp">00:00</span>
+            <h2>先确认网站是否适合 GitHub Pages</h2>
+          </div>
+          <p>
+            视频开头先说明了使用边界：这套免费部署方式适合体量较小的静态网站，例如个人博客、
+            产品介绍页和文档。如果网站依赖大量后端逻辑、需要在服务器运行程序或连接数据库，
+            就不能直接照这套方法部署。
+          </p>
+          <p>
+            GitHub Pages 会把仓库中的静态文件发布到一个公开网址。浏览器请求页面时，
+            GitHub 只负责返回这些已经准备好的文件，不会替你运行 PHP、Python 或其他后端代码。
+          </p>
+        </section>
+
+        <section class="article-section" id="check-site">
+          <div class="section-title-row">
+            <span class="timestamp">00:42</span>
+            <h2>检查网站文件和首页</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>找到完整的网站文件夹</h3>
+              <p>
+                打开资源管理器，找到准备发布的网站。不要只上传某一个 HTML 文件：
+                如果页面还使用 CSS、JavaScript、图片或字体，也要保留原来的目录结构一起上传。
+              </p>
+              <p>一个常见的静态网站目录大致如下：</p>
+              <pre><code>index.html
+assets/
+├── css/
+│   └── style.css
+├── js/
+│   └── main.js
+└── images/
+    └── avatar.jpg</code></pre>
+              <figure class="article-figure">
+                <img
+                  src="images/website-files.webp"
+                  alt="资源管理器中准备上传的网站文件，其中包含 index.html"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>视频示例网站的入口文件是 index.html。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>确认入口文件叫 index.html</h3>
+              <p>
+                GitHub Pages 会在发布目录顶层寻找入口文件。视频使用
+                <code>index.html</code>，因此它必须直接位于准备发布的根目录，
+                不能藏在另一层无关文件夹中。
+              </p>
+            </li>
+            <li>
+              <h3>在浏览器中进行本地预览</h3>
+              <p>
+                双击 <code>index.html</code>，或者右键选择浏览器打开。
+                检查页面文字、图片和按钮是否正常。如果本地就缺图或样式错乱，
+                上传后通常也不会自动恢复。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/local-site-preview.webp"
+                  alt="浏览器中正常打开的本地静态网站首页"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>确认首页能打开后，再开始上传。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="create-repository">
+          <div class="section-title-row">
+            <span class="timestamp">00:58</span>
+            <h2>在 GitHub 创建一个新仓库</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>登录 GitHub</h3>
+              <p>
+                打开
+                <a href="https://github.com/" target="_blank" rel="noopener noreferrer">github.com</a>，
+                登录自己的账户。后续仓库、Pages 地址和自定义域名都属于这个账户。
+              </p>
+            </li>
+            <li>
+              <h3>点击右上角加号</h3>
+              <p>
+                在 GitHub 页面右上角点击 <span class="ui-label">＋</span>，
+                然后选择 <span class="ui-label">New repository</span>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/github-new-repository-menu.webp"
+                  alt="GitHub 右上角加号菜单中的 New repository"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>New repository 用于新建存放网站文件的仓库。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>填写仓库名称</h3>
+              <p>
+                在 <span class="ui-label">Repository name</span> 中输入仓库名。
+                视频为了演示使用 <code>test</code>；你可以使用网站主题相关的名称，
+                例如 <code>personal-blog</code>。仓库名会出现在默认 Pages 地址中。
+              </p>
+            </li>
+            <li>
+              <h3>选择公开仓库并添加 README</h3>
+              <p>
+                使用 GitHub Free 时，选择 <span class="ui-label">Public</span>。
+                然后把 <span class="ui-label">Add README</span> 打开。
+                README 不是网站运行所必需，但视频通过它初始化仓库，创建后可以直接进入完整仓库页面。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/create-repository-form.webp"
+                  alt="GitHub 新建仓库页面中的仓库名称和 Add README 设置"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>示例名称仅用于测试，请根据自己的网站命名。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>创建仓库</h3>
+              <p>
+                检查名称和可见性后，点击页面底部的
+                <span class="ui-label">Create repository</span>。
+                GitHub 创建完成后会自动进入新仓库首页。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="upload-files">
+          <div class="section-title-row">
+            <span class="timestamp">01:31</span>
+            <h2>把网站文件上传到仓库</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>打开上传入口</h3>
+              <p>
+                在仓库首页点击 <span class="ui-label">Add file</span>，
+                再选择 <span class="ui-label">Upload files</span>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/repository-add-file.webp"
+                  alt="GitHub 仓库 Add file 菜单中的 Upload files"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>Upload files 可以通过浏览器直接上传网站成品。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>选中网站中的全部内容</h3>
+              <p>
+                回到资源管理器，进入网站文件夹内部，选中
+                <code>index.html</code> 和它依赖的其他文件、文件夹。
+                重点是上传文件夹里面的内容，而不是再套一层网站文件夹。
+              </p>
+            </li>
+            <li>
+              <h3>拖入 GitHub 上传区域</h3>
+              <p>
+                把选中的内容拖到页面中央写有
+                <span class="ui-label">Drag additional files here</span> 的区域。
+                等待所有文件出现在上传列表中，不要在仍然上传时关闭页面。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/upload-website-files.webp"
+                  alt="从资源管理器把网站文件拖入 GitHub 上传页面"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>目录结构会影响 CSS、JavaScript 和图片路径，上传时不要随意改变。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>提交这次上传</h3>
+              <p>
+                文件上传完成后，滚动到页面下方。提交说明可以保留 GitHub 默认文字，
+                也可以写成 <code>Upload website files</code>。
+                点击绿色的 <span class="ui-label">Commit changes</span>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/commit-uploaded-files.webp"
+                  alt="GitHub 上传页面底部的 Commit changes 按钮"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>Commit changes 会把本次上传正式保存到仓库。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="enable-pages">
+          <div class="section-title-row">
+            <span class="timestamp">02:10</span>
+            <h2>启用 GitHub Pages</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>进入仓库设置</h3>
+              <p>
+                上传完成后，点击仓库顶部的 <span class="ui-label">Settings</span>。
+                如果窗口较窄没有直接显示 Settings，可以先打开顶部的更多菜单。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/repository-settings.webp"
+                  alt="GitHub 仓库 Settings 设置页面"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>需要对仓库拥有管理员权限，才能修改 Pages 设置。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>在左侧找到 Pages</h3>
+              <p>
+                在设置页左侧的 <span class="ui-label">Code and automation</span>
+                分组中点击 <span class="ui-label">Pages</span>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/github-pages-settings.webp"
+                  alt="GitHub Settings 左侧菜单中的 Pages 和 Build and deployment 区域"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>视频使用从分支直接部署的方式，不需要配置服务器。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>选择发布分支</h3>
+              <p>
+                在 <span class="ui-label">Build and deployment</span> 下确认
+                <span class="ui-label">Source</span> 为
+                <span class="ui-label">Deploy from a branch</span>。
+                在 <span class="ui-label">Branch</span> 一栏点击当前的
+                <span class="ui-label">None</span>，改选 <span class="ui-label">main</span>。
+              </p>
+              <p>
+                旁边的目录保持 <code>/(root)</code>，因为
+                <code>index.html</code> 就放在仓库根目录。最后点击
+                <span class="ui-label">Save</span>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/select-main-branch.webp"
+                  alt="GitHub Pages 设置中把发布分支从 None 改为 main"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>main 和 /(root) 表示发布 main 分支根目录中的网站文件。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>等待 GitHub 完成部署</h3>
+              <p>
+                保存后等待几十秒，再刷新 Pages 设置页。视频中很快就出现了网站已发布的提示；
+                实际时间会受 GitHub 构建队列影响，官方说明更新有时可能需要几分钟。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/pages-deployment-ready.webp"
+                  alt="GitHub Pages 设置页显示网站已经发布"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>出现公开地址和 Visit site 后，默认 Pages 网站已经可访问。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="visit-default-site">
+          <div class="section-title-row">
+            <span class="timestamp">02:39</span>
+            <h2>访问 GitHub 提供的默认网址</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>点击 Visit site</h3>
+              <p>
+                在 Pages 设置页点击 <span class="ui-label">Visit site</span>，
+                浏览器会打开 GitHub 自动生成的公开地址。
+              </p>
+            </li>
+            <li>
+              <h3>检查页面和链接</h3>
+              <p>
+                确认首页样式、图片和按钮都能正常显示。项目站点的默认地址通常类似下面的形式，
+                其中用户名和仓库名要换成自己的值：
+              </p>
+              <pre><code>https://your-username.github.io/your-repository/</code></pre>
+              <p>
+                如果页面显示 404，先确认发布分支、目录和 <code>index.html</code> 的位置，
+                再等待一段时间后刷新。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="custom-domain">
+          <div class="section-title-row">
+            <span class="timestamp">02:55</span>
+            <h2>在 GitHub Pages 中填写自己的域名</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>回到 Pages 设置页</h3>
+              <p>
+                默认地址确认可用后，回到仓库
+                <span class="ui-label">Settings</span> →
+                <span class="ui-label">Pages</span>，向下找到
+                <span class="ui-label">Custom domain</span>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/custom-domain-field.webp"
+                  alt="GitHub Pages 设置页中的 Custom domain 输入框"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>先在 GitHub 中添加域名，再去 DNS 服务商创建记录。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>确定要使用的完整子域名</h3>
+              <p>
+                视频中的域名已经托管在 Cloudflare，并使用 <code>test</code> 作为子域名。
+                例如你的主域名是 <code>example.com</code>，可以填写：
+              </p>
+              <pre><code>test.example.com</code></pre>
+              <p>
+                这里必须填写完整域名，不是只填 <code>test</code>。
+                你也可以改用 <code>blog.example.com</code> 或其他尚未占用的子域名。
+              </p>
+            </li>
+            <li>
+              <h3>点击 Save</h3>
+              <p>
+                输入完成后点击 <span class="ui-label">Save</span>。
+                GitHub 会保存自定义域名，并开始检查它的 DNS 是否正确指向 Pages。
+                从分支部署时，GitHub 通常还会在发布分支根目录创建或更新
+                <code>CNAME</code> 文件，不要在后续上传时误删它。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="cloudflare-dns">
+          <div class="section-title-row">
+            <span class="timestamp">03:42</span>
+            <h2>在 Cloudflare 添加 CNAME 记录</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>打开对应域名的 DNS 记录</h3>
+              <p>
+                登录
+                <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
+                  Cloudflare 控制台
+                </a>，选择刚才使用的主域名。
+                在左侧进入 <span class="ui-label">DNS</span> →
+                <span class="ui-label">Records</span>，然后点击
+                <span class="ui-label">Add record</span>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/cloudflare-add-dns-record.webp"
+                  alt="Cloudflare 域名 DNS 记录页面中的添加记录按钮"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>确保打开的是刚才填入 GitHub Pages 的那个主域名。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>把记录类型改为 CNAME</h3>
+              <p>
+                在新增记录窗口中，把 <span class="ui-label">Type</span>
+                选择为 <span class="ui-label">CNAME</span>。
+              </p>
+            </li>
+            <li>
+              <h3>填写子域名名称</h3>
+              <p>
+                在 <span class="ui-label">Name</span> 中只填写子域名前缀。
+                如果 GitHub 中填写的是 <code>test.example.com</code>，
+                这里就填写 <code>test</code>；如果使用
+                <code>blog.example.com</code>，这里填写 <code>blog</code>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/cloudflare-cname-type-and-name.webp"
+                  alt="Cloudflare 新增 CNAME 记录并把名称填写为 test"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>视频示例的 Name 为 test，读者应填写自己选定的子域名。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>填写 GitHub Pages 默认域名</h3>
+              <p>
+                在 <span class="ui-label">Target</span> 或
+                <span class="ui-label">Content</span> 中填写 GitHub Pages 的账户域名，
+                格式如下：
+              </p>
+              <pre><code>your-username.github.io</code></pre>
+              <p>
+                只填写域名，不要加 <code>https://</code>，不要带路径，
+                也不要把项目仓库名附在后面。视频从 GitHub Pages 地址中复制这部分内容。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/cloudflare-cname-target.webp"
+                  alt="Cloudflare CNAME 记录目标填写 GitHub Pages 默认域名"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>目标值应是你自己的 GitHub 用户名加 .github.io。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>保存 DNS 记录</h3>
+              <p>
+                点击 <span class="ui-label">Save</span> 保存。
+                视频中 Cloudflare 的代理开关处于开启状态；如果 GitHub 长时间无法验证、
+                HTTPS 证书签发失败或访问异常，可以先把记录切换为
+                <span class="ui-label">DNS only</span>，待 GitHub 检查和 HTTPS 正常后再决定是否启用代理。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="dns-check">
+          <div class="section-title-row">
+            <span class="timestamp">04:45</span>
+            <h2>等待 GitHub 完成 DNS 检查</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>回到 GitHub Pages 并刷新</h3>
+              <p>
+                返回仓库的 Pages 设置页并刷新。刚添加记录时，页面可能显示
+                <span class="ui-label">DNS check in progress</span> 或检查失败。
+                这通常是 DNS 记录还没有传播完成，不要立即重复创建相同记录。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/dns-check-pending.webp"
+                  alt="GitHub Pages 自定义域名正在进行 DNS 检查"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>视频第一次刷新时检查尚未完成。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>稍等后再次刷新</h3>
+              <p>
+                视频等待片刻后再次刷新，页面出现绿色状态和
+                <span class="ui-label">DNS check successful</span>，
+                说明 GitHub 已确认自定义域名指向正确。
+              </p>
+              <p>
+                DNS 生效时间并不固定，可能是几分钟，也可能更久。
+                GitHub 官方提示 DNS 变更最长可能需要 24 小时传播。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/dns-check-successful.webp"
+                  alt="GitHub Pages 显示 DNS check successful"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>绿色成功状态出现后，再测试自定义域名访问。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>可用后启用 HTTPS</h3>
+              <p>
+                如果页面出现 <span class="ui-label">Enforce HTTPS</span>，
+                建议勾选，使访问自动使用加密连接。新域名的证书可能不会立刻可用，
+                等待签发完成后再开启即可。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="test-domain">
+          <div class="section-title-row">
+            <span class="timestamp">04:53</span>
+            <h2>用自己的域名测试网站</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>点击 Visit site</h3>
+              <p>
+                DNS 检查成功后，点击 Pages 页面中的
+                <span class="ui-label">Visit site</span>，
+                或直接在浏览器地址栏输入刚才绑定的完整域名。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/custom-domain-site.webp"
+                  alt="通过自定义域名打开部署在 GitHub Pages 的网站"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>浏览器地址栏应显示自己的域名，而不是 github.io 默认地址。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>测试页面中的交互</h3>
+              <p>
+                视频继续点击了页面中的 YouTube 按钮，确认能正常跳转到频道首页。
+                你也应逐项检查导航、图片、下载链接和外部链接，尤其要留意文件名大小写。
+                GitHub Pages 的路径区分大小写，本地 Windows 中能打开的错误路径，上线后可能变成 404。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="update-site">
+          <div class="section-title-row">
+            <span class="timestamp">05:09</span>
+            <h2>网站修改后怎样更新</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>先在本地修改文件</h3>
+              <p>
+                视频以 <code>index.html</code> 为例，在代码编辑器中修改首页文字并保存。
+                修改后最好先在本地浏览器刷新检查，确认没有破坏 HTML 结构或资源路径。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/edit-index-html.webp"
+                  alt="代码编辑器中修改网站的 index.html"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>视频通过修改首页文字演示网站更新。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>回到仓库重新上传有变化的文件</h3>
+              <p>
+                打开仓库首页，点击 <span class="ui-label">Add file</span> →
+                <span class="ui-label">Upload files</span>。
+                把保存后的 <code>index.html</code> 拖入上传区域。
+              </p>
+              <p>
+                GitHub 会识别仓库中已有同名文件，并用新版本更新它。
+                如果本次还修改了 CSS、JavaScript 或图片，也要把这些变化一起上传。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/upload-updated-index.webp"
+                  alt="把修改后的 index.html 再次拖入 GitHub 上传页面"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>只上传有变化的文件即可，但不要遗漏它依赖的新资源。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>再次 Commit changes</h3>
+              <p>
+                等待上传完成，填写本次更新说明，例如
+                <code>Update homepage text</code>，然后点击
+                <span class="ui-label">Commit changes</span>。
+                提交后 GitHub Pages 会自动重新部署。
+              </p>
+            </li>
+            <li>
+              <h3>等待部署并强制刷新</h3>
+              <p>
+                等待片刻后回到网站刷新。若页面仍是旧内容，可以使用
+                <kbd>Ctrl</kbd> + <kbd>F5</kbd> 强制刷新，或打开无痕窗口排除浏览器缓存。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/updated-site.webp"
+                  alt="刷新后显示修改内容的 GitHub Pages 网站"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>新文字出现，说明更新已经部署成功。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="troubleshooting">
+          <h2>常见问题和故障排查</h2>
+
+          <div class="resource-box">
+            <h3>打开网站显示 404</h3>
+            <ul>
+              <li>确认仓库根目录中存在名称完全正确的 <code>index.html</code>。</li>
+              <li>确认 Pages 的 Source 是 <span class="ui-label">Deploy from a branch</span>。</li>
+              <li>确认发布分支是 <code>main</code>，目录是 <code>/(root)</code>。</li>
+              <li>检查仓库的 Actions 页面，确认 Pages 部署任务没有失败。</li>
+              <li>刚启用 Pages 时先等待几分钟，不要连续删除并重建配置。</li>
+            </ul>
+          </div>
+
+          <div class="resource-box">
+            <h3>页面能打开，但没有样式或图片</h3>
+            <ul>
+              <li>确认 CSS、JavaScript 和图片文件已经一起上传。</li>
+              <li>检查 HTML 中的路径与仓库目录结构是否一致。</li>
+              <li>检查文件名大小写，例如 <code>Logo.png</code> 与 <code>logo.png</code> 是不同路径。</li>
+              <li>不要在网页中引用电脑上的 <code>C:\</code> 或 <code>G:\</code> 本地路径。</li>
+              <li>项目站点使用绝对路径时要特别小心，优先使用与页面结构匹配的相对路径。</li>
+            </ul>
+          </div>
+
+          <div class="resource-box">
+            <h3>自定义域名一直检查失败</h3>
+            <ul>
+              <li>GitHub Pages 中要填写完整域名，例如 <code>blog.example.com</code>。</li>
+              <li>Cloudflare 的 Name 只填子域名前缀，例如 <code>blog</code>。</li>
+              <li>CNAME Target 应为 <code>your-username.github.io</code>，不要添加协议和仓库路径。</li>
+              <li>删除同一名称下冲突的 A、AAAA 或其他 CNAME 记录。</li>
+              <li>在 Cloudflare 中暂时改为 DNS only，再等待 GitHub 完成验证。</li>
+              <li>DNS 可能需要较长时间传播，官方提示最长可能达到 24 小时。</li>
+            </ul>
+          </div>
+
+          <div class="resource-box">
+            <h3>提交更新后页面仍然没变化</h3>
+            <ul>
+              <li>确认更新已经出现在仓库的 <code>main</code> 分支。</li>
+              <li>等待 Pages 部署任务完成后再刷新网站。</li>
+              <li>使用 <kbd>Ctrl</kbd> + <kbd>F5</kbd>，或清除浏览器缓存。</li>
+              <li>如果启用了 Cloudflare 代理，也可能需要清除 Cloudflare 缓存。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="article-section" id="references">
+          <h2>官方资料与相关链接</h2>
+          <ul>
+            <li>
+              <a
+                href="https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub Docs：Creating a GitHub Pages site
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub Docs：Configuring a publishing source
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub Docs：Managing a custom domain
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/troubleshooting-custom-domains-and-github-pages"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub Docs：自定义域名故障排查
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://developers.cloudflare.com/dns/manage-dns-records/how-to/create-dns-records/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Cloudflare Docs：管理 DNS 记录
+              </a>
+            </li>
+          </ul>
+          <p class="article-note">
+            GitHub 与 Cloudflare 的界面名称可能随更新略有变化。若页面与视频不完全一致，
+            以官方文档和当前控制台显示为准。使用域名及网络服务时，请遵守所在地法律法规和服务条款。
+          </p>
+        </section>
+
+        <footer class="article-footer">
+          <a class="back-link" href="../../index.html">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M16 10H5M9 6l-4 4 4 4"/>
+            </svg>
+            返回全部教程
+          </a>
+          <a
+            class="channel-link"
+            href="https://www.youtube.com/@TuoWen-0528"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            订阅 Tuo Wen
+          </a>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

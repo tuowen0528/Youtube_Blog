@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Cloudflare Tunnel 免费内网穿透完整教程，详细记录在 Windows 安装 cloudflared、创建隧道、绑定域名、映射 localhost 服务和排查 502 Bad Gateway。"
+    >
+    <meta name="theme-color" content="#f7f6f3">
+    <title>2026免费内网穿透！Cloudflare Tunnel 零成本教程｜无需公网IP，小白也能搭建</title>
+    <link rel="icon" href="../../assests/images/channel-avatar.jpg" type="image/jpeg">
+    <link rel="stylesheet" href="../../assests/css/style.css">
+    <script src="../../assests/js/code-copy.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#article-content">跳到文章正文</a>
+
+    <header class="article-header">
+      <a class="back-link" href="../../index.html">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M16 10H5M9 6l-4 4 4 4"/>
+        </svg>
+        返回全部教程
+      </a>
+      <a
+        class="channel-link"
+        href="https://www.youtube.com/@TuoWen-0528"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Tuo Wen
+      </a>
+    </header>
+
+    <main class="article-layout" id="article-content">
+      <article class="article">
+        <header class="article-hero">
+          <p class="eyebrow">Cloudflare Tunnel · Windows · 内网穿透</p>
+          <h1>2026免费内网穿透！Cloudflare Tunnel 零成本教程｜无需公网IP，小白也能搭建</h1>
+          <p class="article-lead">
+            本文按视频顺序记录如何用 Cloudflare Tunnel 把 Windows 电脑上的本地服务发布到自己的域名，
+            不需要公网 IP，也不需要在路由器中做端口转发。
+          </p>
+          <div class="article-meta">
+            <span>发布于 2026 年 6 月 20 日</span>
+            <span>视频时长 3:17</span>
+            <span>适用于 Windows</span>
+          </div>
+          <a
+            class="video-link"
+            href="https://www.youtube.com/watch?v=2XazPWnL7Wk"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            在 YouTube 观看本期视频
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 10h11M11 6l4 4-4 4"/>
+            </svg>
+          </a>
+        </header>
+
+        <div class="notice">
+          <strong>Cloudflare Tunnel 做了什么：</strong>
+          运行在本机的 <code>cloudflared</code> 会主动向 Cloudflare 建立出站连接，
+          再把指定公网域名的访问转发到本机服务。因此家中没有公网 IP、处于运营商 NAT 后面，
+          通常也能使用。你不需要对外开放路由器端口。
+        </div>
+
+        <section class="article-section" id="preparation">
+          <h2>开始前要准备什么</h2>
+          <ul class="check-list">
+            <li>一个 Cloudflare 账户。</li>
+            <li>一个已经接入 Cloudflare DNS 的域名。视频从账户中已有的域名进行选择。</li>
+            <li>一台保持联网的 Windows 电脑，并拥有管理员权限。</li>
+            <li>一个可以在本机访问的 Web 服务，例如网站、开发服务器或本地 AI WebUI。</li>
+            <li>明确该服务监听的协议、地址和端口。视频示例为 <code>HTTP</code> 和 <code>127.0.0.1:8080</code>。</li>
+          </ul>
+
+          <div class="warning">
+            <strong>不要直接公开没有认证的私人服务。</strong>
+            视频为了演示，把本地 AI 页面直接发布到公网域名。任何知道域名的人都可能访问它，
+            消耗你的带宽和算力。正式使用时，应配置 Cloudflare Access 登录验证，或者确保应用自身已有可靠认证。
+          </div>
+
+          <div class="resource-box">
+            <h3>本期会用到的网址</h3>
+            <ul>
+              <li>
+                <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
+                  Cloudflare 控制台
+                </a>
+              </li>
+              <li>
+                <a href="https://one.dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
+                  Cloudflare Zero Trust / Cloudflare One
+                </a>
+              </li>
+              <li>
+                <a href="https://developers.cloudflare.com/tunnel/setup/" target="_blank" rel="noopener noreferrer">
+                  Cloudflare Tunnel 官方设置文档
+                </a>
+              </li>
+              <li>
+                <a href="https://developers.cloudflare.com/tunnel/downloads/" target="_blank" rel="noopener noreferrer">
+                  cloudflared 官方下载页
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <nav class="article-toc" aria-labelledby="toc-title">
+          <h2 id="toc-title">视频时间轴</h2>
+          <ol>
+            <li><a href="#intro"><time>00:00</time>效果介绍</a></li>
+            <li><a href="#zero-trust"><time>00:18</time>进入 Cloudflare Zero Trust</a></li>
+            <li><a href="#create-tunnel"><time>00:30</time>创建 Cloudflare Tunnel</a></li>
+            <li><a href="#windows"><time>00:45</time>选择 Windows 安装方式</a></li>
+            <li><a href="#install"><time>01:00</time>安装并运行 cloudflared</a></li>
+            <li><a href="#hostname"><time>01:15</time>配置隧道域名</a></li>
+            <li><a href="#origin"><time>01:35</time>填写本地服务地址</a></li>
+            <li><a href="#status"><time>02:00</time>保存并检查隧道</a></li>
+            <li><a href="#start-local"><time>02:15</time>启动本地 AI 服务</a></li>
+            <li><a href="#bad-gateway"><time>02:35</time>排查 Bad Gateway</a></li>
+            <li><a href="#public-access"><time>02:50</time>通过公网域名访问</a></li>
+          </ol>
+        </nav>
+
+        <section class="article-section" id="intro">
+          <div class="section-title-row">
+            <span class="timestamp">00:00</span>
+            <h2>这期教程要实现的效果</h2>
+          </div>
+          <p>
+            本地服务原本只能通过 <code>localhost</code> 或 <code>127.0.0.1</code> 在当前电脑访问。
+            完成 Tunnel 后，访问自己设置的公网域名时，Cloudflare 会把请求沿隧道送到这台电脑上的指定端口。
+          </p>
+          <p>
+            视频最终把上一篇教程中的 llama.cpp 本地 AI 服务从
+            <code>127.0.0.1:8080</code> 映射到一个子域名，并在浏览器中通过公网域名完成对话测试。
+          </p>
+        </section>
+
+        <section class="article-section" id="zero-trust">
+          <div class="section-title-row">
+            <span class="timestamp">00:18</span>
+            <h2>登录 Cloudflare 并进入连接器页面</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>打开 Cloudflare 控制台</h3>
+              <p>
+                浏览器访问
+                <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
+                  dash.cloudflare.com
+                </a> 并登录账户。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/cloudflare-dashboard.webp"
+                  alt="Cloudflare 控制台账户首页"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>确保当前账户中已经添加了准备用于公网访问的域名。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>进入 Zero Trust / Cloudflare One</h3>
+              <p>
+                在左侧找到 <span class="ui-label">Zero Trust</span>。进入后，在左侧打开
+                <span class="ui-label">网络</span>，然后点击
+                <span class="ui-label">连接器</span>。
+              </p>
+              <p>
+                Cloudflare 在 2026 年也把 Tunnel 管理入口加入了主控制台的
+                <span class="ui-label">Networking</span> →
+                <span class="ui-label">Tunnels</span>。如果菜单与视频不同，可以直接搜索“Tunnels”。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/connectors-page.webp"
+                  alt="Cloudflare One 网络连接器页面"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>连接器页面用于管理 Cloudflare Tunnel 和其他网络连接方式。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="create-tunnel">
+          <div class="section-title-row">
+            <span class="timestamp">00:30</span>
+            <h2>创建一个 Cloudflare Tunnel</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>点击添加隧道</h3>
+              <p>
+                在连接器页面点击 <span class="ui-label">添加隧道</span>。
+                如果页面要求选择连接器类型，选择 <span class="ui-label">Cloudflared</span>，然后继续。
+              </p>
+            </li>
+            <li>
+              <h3>给隧道命名</h3>
+              <p>
+                输入便于识别的名称。视频为了测试使用了类似 <code>tuowen001</code> 的名称。
+                读者应使用自己的名称，例如 <code>home-ai-windows</code>，不要照抄视频示例。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/name-tunnel.webp"
+                  alt="Cloudflare 创建隧道并填写隧道名称"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>隧道名称只用于后台识别，不会自动成为公网域名。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>保存隧道</h3>
+              <p>
+                点击 <span class="ui-label">保存隧道</span>，进入连接器安装页面。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="windows">
+          <div class="section-title-row">
+            <span class="timestamp">00:45</span>
+            <h2>选择 Windows 连接器</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>选择操作系统和架构</h3>
+              <p>
+                在“安装并运行连接器”区域选择
+                <span class="ui-label">Windows</span>，架构选择
+                <span class="ui-label">64-bit</span>。绝大多数现代 Windows 电脑都是 64 位。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/windows-connector.webp"
+                  alt="Cloudflare Tunnel 连接器安装页面选择 Windows 64 位"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>macOS、Linux 和 Docker 用户应在同一页面选择对应平台，不能使用本文的 Windows 命令。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>下载 cloudflared</h3>
+              <p>
+                点击页面提供的 Windows 64 位下载链接，安装 <code>cloudflared</code>。
+                也可以从
+                <a href="https://developers.cloudflare.com/tunnel/downloads/" target="_blank" rel="noopener noreferrer">
+                  Cloudflare 官方下载页
+                </a> 获取最新 Windows MSI。
+              </p>
+            </li>
+            <li>
+              <h3>复制页面生成的安装命令</h3>
+              <p>
+                页面会生成专属于当前隧道的命令，格式如下：
+              </p>
+              <pre class="code-block"><code>cloudflared.exe service install &lt;YOUR_TUNNEL_TOKEN&gt;</code></pre>
+              <figure class="article-figure">
+                <img
+                  src="images/install-command.webp"
+                  alt="Cloudflare Tunnel 页面显示 cloudflared Windows 服务安装命令"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>实际命令中的长字符串是 Tunnel Token，必须使用自己页面生成的值。</figcaption>
+              </figure>
+            </li>
+          </ol>
+
+          <div class="warning">
+            <strong>不要把 Tunnel Token 发给别人，也不要截图公开。</strong>
+            拿到 Token 的人可能让其他 cloudflared 实例连接到你的隧道。如果凭据泄露，应在 Cloudflare
+            后台重新生成或轮换 Token。本文中的命令只保留占位符，不包含视频里的真实凭据。
+          </div>
+        </section>
+
+        <section class="article-section" id="install">
+          <div class="section-title-row">
+            <span class="timestamp">01:00</span>
+            <h2>以管理员身份安装 cloudflared 服务</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>打开管理员命令提示符</h3>
+              <p>
+                点击 Windows 开始菜单，搜索 <code>CMD</code> 或“命令提示符”，选择
+                <span class="ui-label">以管理员身份运行</span>。出现用户账户控制提示时允许运行。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/admin-command-prompt.webp"
+                  alt="以管理员身份打开 Windows 命令提示符"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>安装 Windows 服务需要管理员权限，普通终端可能提示访问被拒绝。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>粘贴专属安装命令</h3>
+              <p>
+                把 Cloudflare 页面生成的完整命令粘贴到管理员命令提示符，按
+                <kbd>Enter</kbd> 执行。不要使用本文占位符命令。
+              </p>
+            </li>
+            <li>
+              <h3>等待服务安装完成</h3>
+              <p>
+                命令会把 cloudflared 注册成 Windows 服务，并使用 Tunnel Token 连接当前隧道。
+                成功后返回浏览器，点击页面上的 <span class="ui-label">下一步</span>。
+              </p>
+            </li>
+            <li>
+              <h3>可选：检查 Windows 服务</h3>
+              <p>
+                如果后台长时间显示未连接，可以在管理员终端运行：
+              </p>
+              <pre class="code-block"><code>sc query cloudflared</code></pre>
+              <p>
+                服务状态应为 <code>RUNNING</code>。也可以按 <kbd>Win</kbd> + <kbd>R</kbd>，
+                输入 <code>services.msc</code>，在服务列表中查找 cloudflared。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="hostname">
+          <div class="section-title-row">
+            <span class="timestamp">01:15</span>
+            <h2>配置公网域名</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>选择自己的域名</h3>
+              <p>
+                进入“路由流量”或“Published application”配置。打开域名下拉框，选择已经托管在当前
+                Cloudflare 账户中的域名。视频使用作者自己的域名，仅作为演示。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/select-domain.webp"
+                  alt="Cloudflare Tunnel 发布应用时选择账户中的域名"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>如果下拉框没有域名，需要先把域名添加到 Cloudflare 并完成 DNS 托管。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>填写子域名</h3>
+              <p>
+                子域名可以自定义。视频填写的是 <code>test</code>，最终地址类似
+                <code>test.example.com</code>。建议根据用途命名，例如：
+              </p>
+              <pre class="code-block"><code>ai.example.com
+blog.example.com
+dev.example.com</code></pre>
+              <p>
+                留空子域名会尝试使用根域名。为了避免影响现有网站，通常建议使用一个新的子域名。
+              </p>
+            </li>
+            <li>
+              <h3>路径通常留空</h3>
+              <p>
+                视频没有填写 Path。只有需要把特定 URL 路径映射到该服务时才填写，例如
+                <code>/app</code>。初次配置建议留空，先让整个子域名指向本地服务。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="origin">
+          <div class="section-title-row">
+            <span class="timestamp">01:35</span>
+            <h2>填写本地服务协议、地址和端口</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>选择服务类型</h3>
+              <p>
+                在 Service 类型下拉菜单选择 <span class="ui-label">HTTP</span>。
+                视频中的 llama.cpp WebUI 本地服务使用普通 HTTP，因此不能选择 HTTPS。
+              </p>
+            </li>
+            <li>
+              <h3>填写本地地址</h3>
+              <p>
+                URL 输入：
+              </p>
+              <pre class="code-block"><code>127.0.0.1:8080</code></pre>
+              <p>
+                冒号必须使用英文半角 <code>:</code>。也可以写成：
+              </p>
+              <pre class="code-block"><code>localhost:8080</code></pre>
+              <figure class="article-figure">
+                <img
+                  src="images/hostname-and-service.webp"
+                  alt="Cloudflare Tunnel 配置子域名、HTTP 和 127.0.0.1:8080"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>地址和端口必须与本地应用实际监听的位置一致。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>不同应用要填写不同端口</h3>
+              <p>
+                <code>8080</code> 只是视频中 llama.cpp 的端口。如果本地网站运行在 3000，
+                就应填写 <code>127.0.0.1:3000</code>；如果运行在 8000，则填写
+                <code>127.0.0.1:8000</code>。
+              </p>
+            </li>
+            <li>
+              <h3>点击完成设置</h3>
+              <p>
+                检查子域名、域名、服务类型和 URL 后，点击
+                <span class="ui-label">完成设置</span> 或
+                <span class="ui-label">Add route</span>。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="status">
+          <div class="section-title-row">
+            <span class="timestamp">02:00</span>
+            <h2>保存配置并检查隧道状态</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>确认配置保存成功</h3>
+              <p>
+                页面出现绿色成功提示后，说明公网主机名与本地服务映射已经保存。
+              </p>
+            </li>
+            <li>
+              <h3>返回隧道概述</h3>
+              <p>
+                点击 <span class="ui-label">概述</span>，在 Cloudflare Tunnels 列表中找到刚创建的隧道。
+                隧道状态应显示健康或已连接。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/saved-tunnel.webp"
+                  alt="Cloudflare Tunnel 列表显示新隧道已保存"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>隧道已连接只代表 cloudflared 在线，不代表本地 8080 服务已经启动。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="start-local">
+          <div class="section-title-row">
+            <span class="timestamp">02:15</span>
+            <h2>启动准备公开的本地服务</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>运行本地 AI 服务</h3>
+              <p>
+                视频打开上一篇教程配置好的 Qwen 本地模型启动脚本。命令窗口开始加载模型。
+                这一步可以替换成你自己的本地网站或开发服务器。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/local-ai-starting.webp"
+                  alt="Windows 命令窗口正在加载 llama.cpp 本地 AI 模型"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>模型加载期间，8080 端口可能还没有准备好。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>等待本地服务真正开始监听</h3>
+              <p>
+                llama.cpp 日志最终显示服务器监听：
+              </p>
+              <pre class="code-block"><code>http://127.0.0.1:8080</code></pre>
+              <figure class="article-figure">
+                <img
+                  src="images/local-service-ready.webp"
+                  alt="llama.cpp 显示本地服务器监听 127.0.0.1:8080"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>看到监听地址后，再测试本地和公网访问。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>先在本机确认服务可访问</h3>
+              <p>
+                浏览器打开 <code>http://127.0.0.1:8080</code>。只有本地地址能正常打开，
+                Cloudflare Tunnel 才有可转发的源站。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="bad-gateway">
+          <div class="section-title-row">
+            <span class="timestamp">02:35</span>
+            <h2>理解并排查 502 Bad Gateway</h2>
+          </div>
+
+          <p>
+            视频第一次打开公网域名时出现了 <code>Bad gateway</code> 和错误码 502。
+            这是因为 Tunnel 已经连接 Cloudflare，但本地 AI 服务还没有完全启动，cloudflared 无法访问
+            <code>127.0.0.1:8080</code>。
+          </p>
+          <figure class="article-figure">
+            <img
+              src="images/bad-gateway.webp"
+              alt="Cloudflare 公网域名显示 502 Bad Gateway"
+              width="1440"
+              height="810"
+              loading="lazy"
+            >
+            <figcaption>Browser 和 Cloudflare 显示正常、Host 显示 Error，说明问题位于 cloudflared 与本地服务之间。</figcaption>
+          </figure>
+
+          <ol class="steps">
+            <li>
+              <h3>确认本地地址能打开</h3>
+              <p>
+                先访问 <code>http://127.0.0.1:8080</code>。本地也打不开时，不要继续修改 Cloudflare，
+                先修复应用本身。
+              </p>
+            </li>
+            <li>
+              <h3>检查端口是否监听</h3>
+              <p>在命令提示符运行：</p>
+              <pre class="code-block"><code>netstat -ano | findstr :8080</code></pre>
+              <p>
+                没有输出通常说明没有程序监听 8080。若应用使用其他端口，应同步修改 Tunnel 的 Service URL。
+              </p>
+            </li>
+            <li>
+              <h3>核对 HTTP 与 HTTPS</h3>
+              <p>
+                本地服务是 <code>http://</code> 时，Tunnel 类型必须选 HTTP。
+                错选 HTTPS 可能出现 TLS 或源站连接错误。
+              </p>
+            </li>
+            <li>
+              <h3>确认 cloudflared 与应用在正确电脑上</h3>
+              <p>
+                <code>127.0.0.1</code> 指的是运行 cloudflared 的那台电脑。
+                如果应用在局域网另一台设备上，应填写该设备的局域网 IP，例如
+                <code>192.168.1.20:8080</code>。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="public-access">
+          <div class="section-title-row">
+            <span class="timestamp">02:50</span>
+            <h2>通过公网域名访问本地 AI</h2>
+          </div>
+
+          <ol class="steps">
+            <li>
+              <h3>刷新公网域名</h3>
+              <p>
+                本地模型完成加载后，刷新之前配置的公网子域名。页面应从 502 错误切换为本地 AI WebUI。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/public-ai-page.webp"
+                  alt="通过 Cloudflare Tunnel 公网域名打开本地 AI WebUI"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>地址栏使用公网子域名，页面内容来自 Windows 电脑上的本地服务。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>发送消息测试双向通信</h3>
+              <p>
+                视频输入“你好”，模型成功返回回答。这说明浏览器请求已通过 Cloudflare Tunnel 到达本地 AI，
+                模型响应也沿同一路径返回公网浏览器。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/public-ai-response.webp"
+                  alt="公网域名中的本地 AI 成功回复你好"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>测试完成后，不需要公开访问时应关闭路由或增加身份验证。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="security">
+          <h2>公开服务前必须检查的安全事项</h2>
+          <ul class="check-list">
+            <li>不要公开管理后台、数据库、路由器后台或没有密码的开发工具。</li>
+            <li>给 AI、博客后台等服务添加 Cloudflare Access 登录策略。</li>
+            <li>不要在截图、文章或聊天中泄露 Tunnel Token。</li>
+            <li>限制上传大小和请求频率，避免公网用户消耗本机磁盘、显存和带宽。</li>
+            <li>应用停止使用后，删除 Published application route 或暂停 Tunnel。</li>
+            <li>及时更新 cloudflared。Cloudflare 官方说明 Windows 版本不会自动更新。</li>
+          </ul>
+        </section>
+
+        <section class="article-section" id="troubleshooting">
+          <h2>常见问题</h2>
+
+          <div class="faq-list">
+            <details>
+              <summary>域名下拉框里没有可选域名怎么办？</summary>
+              <p>
+                先在 Cloudflare 控制台添加域名，并按照提示把域名的权威 DNS 切换到 Cloudflare。
+                域名尚未激活时，Published application 页面无法正常创建对应记录。
+              </p>
+            </details>
+            <details>
+              <summary>安装命令提示 Access is denied 怎么办？</summary>
+              <p>
+                关闭当前终端，重新搜索 CMD 或 PowerShell，并选择“以管理员身份运行”。
+                同时确认 cloudflared 已正确安装。
+              </p>
+            </details>
+            <details>
+              <summary>Tunnel 显示已连接，但域名仍然 502 怎么办？</summary>
+              <p>
+                502 表示 Tunnel 在线，但 cloudflared 无法访问本地服务。检查应用是否启动、端口是否正确、
+                HTTP/HTTPS 是否匹配，并先确认本地地址可以打开。
+              </p>
+            </details>
+            <details>
+              <summary>可以映射局域网里另一台电脑吗？</summary>
+              <p>
+                可以。把 Service URL 从 <code>127.0.0.1:端口</code> 改为目标设备的局域网 IP 和端口。
+                运行 cloudflared 的电脑必须能直接访问该局域网地址。
+              </p>
+            </details>
+            <details>
+              <summary>关闭本地电脑后公网域名还能用吗？</summary>
+              <p>
+                不能。cloudflared 和本地应用都依赖这台电脑运行。电脑关机、休眠、断网或应用退出后，
+                Tunnel 无法继续把请求转发到服务。
+              </p>
+            </details>
+            <details>
+              <summary>Cloudflare Tunnel 是否等于隐藏本地服务的所有风险？</summary>
+              <p>
+                不是。Tunnel 避免了直接开放入站端口，但公开的应用仍可能有弱密码、越权、文件上传或代码执行漏洞。
+                Tunnel 是连接方式，不会自动修复应用安全问题。
+              </p>
+            </details>
+          </div>
+        </section>
+
+        <section class="article-section" id="resources">
+          <h2>官方资料与相关链接</h2>
+          <ul class="source-list">
+            <li>
+              <a
+                href="https://www.youtube.com/watch?v=2XazPWnL7Wk"
+                target="_blank"
+                rel="noopener noreferrer"
+              >本期 YouTube 视频</a>
+            </li>
+            <li>
+              <a
+                href="https://developers.cloudflare.com/tunnel/setup/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Cloudflare Tunnel 设置指南</a>
+            </li>
+            <li>
+              <a
+                href="https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >通过 Dashboard 创建 Tunnel</a>
+            </li>
+            <li>
+              <a
+                href="https://developers.cloudflare.com/tunnel/downloads/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >cloudflared 官方下载</a>
+            </li>
+            <li>
+              <a
+                href="https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/troubleshoot-tunnels/common-errors/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Cloudflare Tunnel 常见错误说明</a>
+            </li>
+            <li>
+              <a
+                href="https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >使用 Cloudflare Access 保护自托管应用</a>
+            </li>
+          </ul>
+          <p class="article-note">
+            本文按 2026 年 6 月 20 日发布的视频整理。Cloudflare 的菜单名称和入口可能调整。
+            当前官方入口也可能显示为 Networking → Tunnels、Routes 和 Published application。
+            操作时请以 Cloudflare 官方页面为准。
+          </p>
+        </section>
+
+        <footer class="article-footer">
+          <a class="back-link" href="../../index.html">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M16 10H5M9 6l-4 4 4 4"/>
+            </svg>
+            返回全部教程
+          </a>
+          <a
+            href="https://www.youtube.com/@TuoWen-0528"
+            target="_blank"
+            rel="noopener noreferrer"
+          >订阅 Tuo Wen</a>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>
