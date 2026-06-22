@@ -35,6 +35,19 @@
 
     <main class="article-layout" id="article-content">
       <article class="article">
+        <div class="warning">
+          <strong>重要：这篇旧版教程的参数配置存在问题，请不要继续照此部署。</strong>
+          旧脚本没有正确处理 CUDA 运行库、显存分配和服务 slot，
+          可能导致模型实际使用 CPU，或在 CUDA 已启用时仍然生成极慢。
+          请改用
+          <a
+            href="../qwen36-35b-uncensored-windows-remake-tutorial/qwen36-35b-uncensored-windows-remake-tutorial.html"
+          >
+            最新重制教程：旧版有坑！Qwen3.6 35B越狱版本地部署【重制教程】｜12GB显存实测
+          </a>。
+          新教程已经补齐 CUDA DLL、修正启动脚本，并提供实际参数测试数据。
+        </div>
+
         <header class="article-hero">
           <p class="eyebrow">Qwen · llama.cpp · Windows</p>
           <h1>Qwen3.6 越狱版来了！Windows 本地部署 35B 模型｜llama.cpp 完整教程</h1>

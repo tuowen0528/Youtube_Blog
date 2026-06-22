@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Qwen3.6 35B 越狱视觉模型在 RTX 3060 12GB 上的 llama.cpp CUDA 参数性能测试数据，包括生成速度、显存占用和视觉 Token 优化结果。"
+    >
+    <meta name="theme-color" content="#f7f6f3">
+    <title>Qwen3.6 CUDA 参数性能测试数据｜RTX 3060 12GB</title>
+    <link rel="icon" href="../../assests/images/channel-avatar.jpg" type="image/jpeg">
+    <link rel="stylesheet" href="../../assests/css/style.css">
+    <style>
+      .data-page {
+        width: min(100% - 48px, 1180px);
+        margin-inline: auto;
+        padding: 78px 0 72px;
+      }
+
+      .data-hero {
+        max-width: 900px;
+        padding-bottom: 58px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .data-hero h1 {
+        max-width: 880px;
+        font-size: clamp(38px, 5.2vw, 66px);
+        line-height: 1.14;
+      }
+
+      .data-lead {
+        max-width: 780px;
+        margin: 26px 0 20px;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .data-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 22px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin: 42px 0 0;
+      }
+
+      .summary-card {
+        min-width: 0;
+        padding: 22px;
+        border: 1px solid var(--soft-line);
+        border-radius: 10px;
+        background: var(--surface);
+      }
+
+      .summary-card strong {
+        display: block;
+        margin-top: 8px;
+        font-family: var(--display);
+        font-size: clamp(25px, 3vw, 34px);
+        letter-spacing: -0.035em;
+        line-height: 1.1;
+      }
+
+      .summary-card span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .summary-card small {
+        display: block;
+        margin-top: 8px;
+        color: var(--accent);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      .data-section {
+        padding: 66px 0 0;
+      }
+
+      .data-section-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 0.55fr);
+        gap: 36px;
+        align-items: end;
+        margin-bottom: 28px;
+      }
+
+      .data-section-header h2 {
+        font-size: clamp(29px, 4vw, 42px);
+        line-height: 1.18;
+      }
+
+      .data-section-header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .chart-card {
+        padding: clamp(20px, 3vw, 30px);
+        border: 1px solid var(--soft-line);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+
+      .chart-title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px 24px;
+        margin-bottom: 26px;
+      }
+
+      .chart-title h3 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -0.025em;
+      }
+
+      .chart-title span {
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      .bar-chart {
+        display: grid;
+        gap: 18px;
+      }
+
+      .bar-row {
+        display: grid;
+        grid-template-columns: minmax(170px, 0.42fr) minmax(260px, 1fr) 82px;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .bar-label {
+        min-width: 0;
+      }
+
+      .bar-label strong {
+        display: block;
+        overflow-wrap: anywhere;
+        font-size: 14px;
+      }
+
+      .bar-label span {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .bar-track {
+        position: relative;
+        height: 24px;
+        overflow: hidden;
+        border-radius: 4px;
+        background: #efede8;
+      }
+
+      .bar-fill {
+        width: var(--bar-width);
+        height: 100%;
+        border: 1px solid var(--bar-edge, #79231f);
+        border-radius: inherit;
+        background: var(--bar-color, #9d2f29);
+      }
+
+      .bar-fill.muted {
+        --bar-color: #c7c2ba;
+        --bar-edge: #a9a39a;
+      }
+
+      .bar-fill.secondary {
+        --bar-color: #d8a34e;
+        --bar-edge: #9a6812;
+      }
+
+      .bar-value {
+        text-align: right;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .chart-note {
+        margin: 24px 0 0;
+        padding-top: 18px;
+        border-top: 1px solid var(--soft-line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .metric-comparison {
+        padding: 26px;
+        border: 1px solid var(--soft-line);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+
+      .metric-comparison h3 {
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+
+      .metric-comparison > p {
+        margin: 0 0 24px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .before-after {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .metric-box {
+        min-width: 0;
+        padding: 18px;
+        border-radius: 8px;
+        background: #f1efeb;
+      }
+
+      .metric-box.after {
+        background: var(--accent-soft);
+      }
+
+      .metric-box span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .metric-box strong {
+        display: block;
+        margin-top: 4px;
+        font-family: var(--mono);
+        font-size: clamp(22px, 3vw, 30px);
+        line-height: 1.15;
+      }
+
+      .comparison-arrow {
+        color: var(--accent);
+        font-family: var(--mono);
+        font-weight: 700;
+      }
+
+      .gain {
+        margin-top: 18px;
+        color: var(--accent);
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .data-table-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .data-table-tools p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .table-filter {
+        min-height: 40px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--ink);
+        font: 13px var(--body);
+      }
+
+      .performance-table {
+        overflow-x: auto;
+        border: 1px solid var(--soft-line);
+        border-radius: 10px;
+        background: var(--surface);
+      }
+
+      .performance-table table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: collapse;
+        text-align: left;
+      }
+
+      .performance-table th,
+      .performance-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--soft-line);
+        vertical-align: middle;
+        font-size: 13px;
+      }
+
+      .performance-table th {
+        background: #f1efeb;
+        color: #413d38;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .performance-table th button {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      .performance-table th button:hover {
+        color: var(--accent);
+      }
+
+      .performance-table tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .performance-table tbody tr.best-row {
+        background: #fbf5f3;
+      }
+
+      .performance-table tbody tr[hidden] {
+        display: none;
+      }
+
+      .number-cell {
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        min-height: 25px;
+        align-items: center;
+        padding: 0 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #f4f2ee;
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .status-badge.best {
+        border-color: #d9b7b2;
+        background: var(--accent-soft);
+        color: var(--accent-dark);
+        font-weight: 700;
+      }
+
+      .recommendation {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(250px, 0.5fr);
+        gap: 28px;
+        margin-top: 30px;
+        padding: clamp(24px, 4vw, 36px);
+        border-left: 3px solid var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .recommendation h3 {
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+
+      .recommendation p {
+        margin: 0;
+        color: #4c302d;
+      }
+
+      .recommendation dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 14px;
+        margin: 0;
+        font-size: 13px;
+      }
+
+      .recommendation dt {
+        color: #79514d;
+      }
+
+      .recommendation dd {
+        margin: 0;
+        font-family: var(--mono);
+        font-weight: 700;
+      }
+
+      .method-note {
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .data-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        margin-top: 72px;
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        .summary-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .data-section-header,
+        .recommendation {
+          grid-template-columns: 1fr;
+        }
+
+        .comparison-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .data-page {
+          width: min(100% - 32px, 680px);
+          padding-top: 52px;
+        }
+
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .bar-row {
+          grid-template-columns: minmax(0, 1fr) 72px;
+          gap: 7px 12px;
+        }
+
+        .bar-track {
+          grid-column: 1 / -1;
+          grid-row: 2;
+        }
+
+        .bar-value {
+          grid-column: 2;
+          grid-row: 1;
+        }
+
+        .before-after {
+          grid-template-columns: 1fr;
+        }
+
+        .comparison-arrow {
+          transform: rotate(90deg);
+          text-align: center;
+        }
+
+        .data-footer {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .bar-fill {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#data-content">跳到测试数据</a>
+
+    <header class="article-header">
+      <a class="back-link" href="../../index.html">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M16 10H5M9 6l-4 4 4 4"/>
+        </svg>
+        返回博客首页
+      </a>
+      <a
+        class="channel-link"
+        href="https://www.youtube.com/@TuoWen-0528"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Tuo Wen
+      </a>
+    </header>
+
+    <main class="data-page" id="data-content">
+      <header class="data-hero">
+        <p class="eyebrow">llama.cpp · CUDA · Performance data</p>
+        <h1>Qwen3.6 CUDA 参数性能测试数据</h1>
+        <p class="data-lead">
+          在 RTX 3060 12GB 上测试 Qwen3.6 35B A3B 越狱视觉模型。
+          对比 CUDA 是否生效、GPU 层分配、上下文长度、服务 slot 和视觉 Token
+          对生成速度、显存占用与图片首轮等待时间的影响。
+        </p>
+        <div class="data-meta">
+          <span>测试日期 2026-06-22</span>
+          <span>llama.cpp b9672</span>
+          <span>模型 IQ2_M</span>
+          <span>RTX 3060 12GB</span>
+        </div>
+
+        <div class="summary-grid" aria-label="关键测试结论">
+          <div class="summary-card">
+            <span>最初 CPU 生成速度</span>
+            <strong>11.65 t/s</strong>
+            <small>CUDA 依赖缺失</small>
+          </div>
+          <div class="summary-card">
+            <span>最快服务端长测</span>
+            <strong>66.25 t/s</strong>
+            <small>较 CPU 快约 5.69 倍</small>
+          </div>
+          <div class="summary-card">
+            <span>图片请求总时间</span>
+            <strong>11.65 s</strong>
+            <small>视觉 Token 固定为 1024</small>
+          </div>
+          <div class="summary-card">
+            <span>最快配置显存占用</span>
+            <strong>11873 MiB</strong>
+            <small>理论余量约 415 MiB</small>
+          </div>
+        </div>
+      </header>
+
+      <section class="data-section" aria-labelledby="stage-title">
+        <div class="data-section-header">
+          <div>
+            <p class="eyebrow">01 · Overall comparison</p>
+            <h2 id="stage-title">从 12 t/s 到 66 t/s</h2>
+          </div>
+          <p>
+            展示排查过程中的代表性生成速度。不同测试工具和负载不能完全等同，
+            但可以清楚看出 CUDA、单 slot 和显存配置带来的数量级差异。
+          </p>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">
+            <h3>代表性生成速度</h3>
+            <span>越长越快 · 单位 token/s</span>
+          </div>
+          <div class="bar-chart">
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>CPU 基准</strong>
+                <span>CUDA 后端未加载 · tg128</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill muted" style="--bar-width: 17.6%"></div>
+              </div>
+              <div class="bar-value">11.65</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>显存顶满 + 4 slot</strong>
+                <span>CUDA 已启用，但只剩约 161 MiB</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill muted" style="--bar-width: 14.3%"></div>
+              </div>
+              <div class="bar-value">约 9.46</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>CUDA 初次基准</strong>
+                <span>llama-bench 短生成 · tg64</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill secondary" style="--bar-width: 28.7%"></div>
+              </div>
+              <div class="bar-value">19.01</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>自动适配 + 1 slot</strong>
+                <span>auto · fitt 256 · 8K · Q8 KV</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill secondary" style="--bar-width: 80.9%"></div>
+              </div>
+              <div class="bar-value">53.59</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>强制全层 + 1 slot</strong>
+                <span>all · fit off · 8K · Q8 KV</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="--bar-width: 100%"></div>
+              </div>
+              <div class="bar-value">66.25</div>
+            </div>
+          </div>
+          <p class="chart-note">
+            最初约 12 t/s 并不是模型本身只能达到这个速度，而是 CUDA 13.3
+            运行依赖缺失，实际落到了 CPU。CUDA 开启后，如果显存被 4 个 slot
+            和大上下文挤满，也可能反而下降到约 9 t/s。
+          </p>
+        </div>
+      </section>
+
+      <section class="data-section" aria-labelledby="long-test-title">
+        <div class="data-section-header">
+          <div>
+            <p class="eyebrow">02 · Server long test</p>
+            <h2 id="long-test-title">正式 384 Token 长测</h2>
+          </div>
+          <p>
+            三组测试使用相同模型、F16 mmproj、GPU 视觉卸载、Flash Attention、
+            Q8 KV 和单 slot。主要变量是 GPU 层适配方式与上下文长度。
+          </p>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">
+            <h3>日志生成速度</h3>
+            <span>384 completion tokens · 越高越好</span>
+          </div>
+          <div class="bar-chart">
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>all-q8-ctx8192</strong>
+                <span>-ngl all · --fit off · 8192</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="--bar-width: 100%"></div>
+              </div>
+              <div class="bar-value">66.25 t/s</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>auto256-q8-ctx8192</strong>
+                <span>-ngl auto · -fitt 256 · 8192</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill secondary" style="--bar-width: 80.9%"></div>
+              </div>
+              <div class="bar-value">53.59 t/s</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">
+                <strong>auto256-q8-ctx4096</strong>
+                <span>-ngl auto · -fitt 256 · 4096</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill secondary" style="--bar-width: 80.9%"></div>
+              </div>
+              <div class="bar-value">53.59 t/s</div>
+            </div>
+          </div>
+          <p class="chart-note">
+            强制全层配置比 8K 自动适配快约 23.6%；自动适配时，
+            4096 与 8192 上下文的生成速度几乎没有差异。
+          </p>
+        </div>
+
+        <div class="comparison-grid" style="margin-top: 20px">
+          <div class="metric-comparison">
+            <h3>速度与稳定性的取舍</h3>
+            <p>最快配置与保守配置的长测结果</p>
+            <div class="before-after">
+              <div class="metric-box">
+                <span>自动适配</span>
+                <strong>53.59 t/s</strong>
+              </div>
+              <div class="comparison-arrow" aria-hidden="true">→</div>
+              <div class="metric-box after">
+                <span>强制全层</span>
+                <strong>66.25 t/s</strong>
+              </div>
+            </div>
+            <div class="gain">日志生成速度 +23.62%</div>
+          </div>
+
+          <div class="metric-comparison">
+            <h3>显存代价</h3>
+            <p>测试期间 nvidia-smi 报告的整卡显存占用</p>
+            <div class="before-after">
+              <div class="metric-box">
+                <span>自动适配 8K</span>
+                <strong>11631 MiB</strong>
+              </div>
+              <div class="comparison-arrow" aria-hidden="true">→</div>
+              <div class="metric-box after">
+                <span>强制全层 8K</span>
+                <strong>11873 MiB</strong>
+              </div>
+            </div>
+            <div class="gain">多占用约 242 MiB</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="data-section" aria-labelledby="vision-title">
+        <div class="data-section-header">
+          <div>
+            <p class="eyebrow">03 · Vision latency</p>
+            <h2 id="vision-title">视觉 Token 决定图片首轮等待</h2>
+          </div>
+          <p>
+            使用同一张 1920 × 1200 图片和相同的 128 Token 输出请求。
+            文本生成速度基本不变，真正拉开差距的是图片被编码成多少视觉 Token。
+          </p>
+        </div>
+
+        <div class="comparison-grid">
+          <div class="metric-comparison">
+            <h3>端到端请求时间</h3>
+            <p>从发送图片到完整返回回答</p>
+            <div class="before-after">
+              <div class="metric-box">
+                <span>默认视觉 Token</span>
+                <strong>36.4 s</strong>
+              </div>
+              <div class="comparison-arrow" aria-hidden="true">→</div>
+              <div class="metric-box after">
+                <span>固定 1024</span>
+                <strong>11.65 s</strong>
+              </div>
+            </div>
+            <div class="gain">等待时间降低约 68.0% · 快约 3.12 倍</div>
+          </div>
+
+          <div class="metric-comparison">
+            <h3>图片提示处理时间</h3>
+            <p>不包含后续文本生成阶段</p>
+            <div class="before-after">
+              <div class="metric-box">
+                <span>2305 个提示 Token</span>
+                <strong>34.29 s</strong>
+              </div>
+              <div class="comparison-arrow" aria-hidden="true">→</div>
+              <div class="metric-box after">
+                <span>1025 个提示 Token</span>
+                <strong>9.61 s</strong>
+              </div>
+            </div>
+            <div class="gain">减少约 24.68 秒</div>
+          </div>
+
+          <div class="metric-comparison">
+            <h3>图片提示处理速度</h3>
+            <p>视觉编码与提示处理吞吐</p>
+            <div class="before-after">
+              <div class="metric-box">
+                <span>默认设置</span>
+                <strong>67.21 t/s</strong>
+              </div>
+              <div class="comparison-arrow" aria-hidden="true">→</div>
+              <div class="metric-box after">
+                <span>固定 1024</span>
+                <strong>106.67 t/s</strong>
+              </div>
+            </div>
+            <div class="gain">处理速度提高约 58.7%</div>
+          </div>
+
+          <div class="metric-comparison">
+            <h3>图片后的文本生成</h3>
+            <p>视觉 Token 优化没有牺牲回答生成速度</p>
+            <div class="before-after">
+              <div class="metric-box">
+                <span>默认设置</span>
+                <strong>64.25 t/s</strong>
+              </div>
+              <div class="comparison-arrow" aria-hidden="true">→</div>
+              <div class="metric-box after">
+                <span>固定 1024</span>
+                <strong>65.42 t/s</strong>
+              </div>
+            </div>
+            <div class="gain">基本不变 · 约提高 1.8%</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="data-section" aria-labelledby="table-title">
+        <div class="data-section-header">
+          <div>
+            <p class="eyebrow">04 · Exact lookup</p>
+            <h2 id="table-title">参数测试明细</h2>
+          </div>
+          <p>
+            表格用于查询准确数值。点击带箭头的列标题可以排序；
+            下拉菜单可切换短测、长测和视觉测试。
+          </p>
+        </div>
+
+        <div class="data-table-tools">
+          <p id="table-status">显示全部 10 条测试记录</p>
+          <label>
+            <span class="skip-link">选择测试类型</span>
+            <select class="table-filter" id="test-filter">
+              <option value="all">全部测试</option>
+              <option value="短测">第一轮短测</option>
+              <option value="长测">第二轮长测</option>
+              <option value="视觉">视觉请求</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="performance-table">
+          <table>
+            <thead>
+              <tr>
+                <th>测试类型</th>
+                <th>参数组合</th>
+                <th>GPU 层 / 适配</th>
+                <th>
+                  <button type="button" data-sort="context">上下文 ↕</button>
+                </th>
+                <th>KV</th>
+                <th>
+                  <button type="button" data-sort="generation">生成速度 ↕</button>
+                </th>
+                <th>
+                  <button type="button" data-sort="wall">墙钟速度 ↕</button>
+                </th>
+                <th>
+                  <button type="button" data-sort="vram">显存 ↕</button>
+                </th>
+                <th>结论</th>
+              </tr>
+            </thead>
+            <tbody id="performance-body">
+              <tr data-type="短测" data-context="8192" data-generation="66.78" data-wall="0" data-vram="0">
+                <td>短测</td>
+                <td><code>all-q8-ctx8192</code></td>
+                <td><code>all / fit off</code></td>
+                <td class="number-cell">8192</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">66.78 t/s</td>
+                <td>—</td>
+                <td>—</td>
+                <td><span class="status-badge">短测最快</span></td>
+              </tr>
+              <tr data-type="短测" data-context="8192" data-generation="53.77" data-wall="0" data-vram="0">
+                <td>短测</td>
+                <td><code>auto256-q8-ctx8192</code></td>
+                <td><code>auto / fitt 256</code></td>
+                <td class="number-cell">8192</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">53.77 t/s</td>
+                <td>—</td>
+                <td>—</td>
+                <td><span class="status-badge">稳定</span></td>
+              </tr>
+              <tr data-type="短测" data-context="4096" data-generation="16.37" data-wall="0" data-vram="0">
+                <td>短测</td>
+                <td><code>all-q8-ctx4096</code></td>
+                <td><code>all / fit off</code></td>
+                <td class="number-cell">4096</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">16.37 t/s</td>
+                <td>—</td>
+                <td>—</td>
+                <td><span class="status-badge">异常低值</span></td>
+              </tr>
+              <tr data-type="短测" data-context="4096" data-generation="54.05" data-wall="0" data-vram="0">
+                <td>短测</td>
+                <td><code>auto256-q8-ctx4096</code></td>
+                <td><code>auto / fitt 256</code></td>
+                <td class="number-cell">4096</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">54.05 t/s</td>
+                <td>—</td>
+                <td>—</td>
+                <td><span class="status-badge">稳定</span></td>
+              </tr>
+              <tr data-type="短测" data-context="4096" data-generation="52.57" data-wall="0" data-vram="0">
+                <td>短测</td>
+                <td><code>auto512-q8-ctx4096</code></td>
+                <td><code>auto / fitt 512</code></td>
+                <td class="number-cell">4096</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">52.57 t/s</td>
+                <td>—</td>
+                <td>—</td>
+                <td><span class="status-badge">略慢</span></td>
+              </tr>
+              <tr
+                class="best-row"
+                data-type="长测"
+                data-context="8192"
+                data-generation="66.25"
+                data-wall="64.04"
+                data-vram="11873"
+              >
+                <td>长测</td>
+                <td><code>all-q8-ctx8192</code></td>
+                <td><code>all / fit off</code></td>
+                <td class="number-cell">8192</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">66.25 t/s</td>
+                <td class="number-cell">64.04 t/s</td>
+                <td class="number-cell">11873 MiB</td>
+                <td><span class="status-badge best">最终最快</span></td>
+              </tr>
+              <tr data-type="长测" data-context="8192" data-generation="53.59" data-wall="51.41" data-vram="11631">
+                <td>长测</td>
+                <td><code>auto256-q8-ctx8192</code></td>
+                <td><code>auto / fitt 256</code></td>
+                <td class="number-cell">8192</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">53.59 t/s</td>
+                <td class="number-cell">51.41 t/s</td>
+                <td class="number-cell">11631 MiB</td>
+                <td><span class="status-badge">保守配置</span></td>
+              </tr>
+              <tr data-type="长测" data-context="4096" data-generation="53.59" data-wall="51.47" data-vram="11585">
+                <td>长测</td>
+                <td><code>auto256-q8-ctx4096</code></td>
+                <td><code>auto / fitt 256</code></td>
+                <td class="number-cell">4096</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">53.59 t/s</td>
+                <td class="number-cell">51.47 t/s</td>
+                <td class="number-cell">11585 MiB</td>
+                <td><span class="status-badge">更省显存</span></td>
+              </tr>
+              <tr data-type="视觉" data-context="8192" data-generation="64.25" data-wall="0" data-vram="0">
+                <td>视觉</td>
+                <td><code>默认视觉 Token</code></td>
+                <td><code>all / fit off</code></td>
+                <td class="number-cell">8192</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">64.25 t/s</td>
+                <td class="number-cell">36.40 s 总时间</td>
+                <td>—</td>
+                <td><span class="status-badge">首轮较慢</span></td>
+              </tr>
+              <tr
+                class="best-row"
+                data-type="视觉"
+                data-context="8192"
+                data-generation="65.42"
+                data-wall="0"
+                data-vram="0"
+              >
+                <td>视觉</td>
+                <td><code>视觉 Token = 1024</code></td>
+                <td><code>all / fit off</code></td>
+                <td class="number-cell">8192</td>
+                <td>Q8 / Q8</td>
+                <td class="number-cell">65.42 t/s</td>
+                <td class="number-cell">11.65 s 总时间</td>
+                <td>—</td>
+                <td><span class="status-badge best">视觉推荐</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="data-section" aria-labelledby="recommendation-title">
+        <div class="data-section-header">
+          <div>
+            <p class="eyebrow">05 · Recommendation</p>
+            <h2 id="recommendation-title">本机测试的最佳参数方向</h2>
+          </div>
+          <p>
+            结论针对 RTX 3060 12GB、llama.cpp b9672、IQ2_M 主模型和 F16 mmproj。
+            不同显卡、构建版本及后台显存占用可能得到不同结果。
+          </p>
+        </div>
+
+        <div class="recommendation">
+          <div>
+            <h3>最高速度配置</h3>
+            <p>
+              使用全部 GPU 层、关闭自动适配、保留 Q8 KV、把服务 slot 固定为 1，
+              上下文设置为 8192。视觉任务偏向低延迟时，将单图视觉 Token 固定为 1024。
+            </p>
+          </div>
+          <dl>
+            <dt>GPU 层</dt>
+            <dd>-ngl all</dd>
+            <dt>显存适配</dt>
+            <dd>--fit off</dd>
+            <dt>KV Cache</dt>
+            <dd>q8_0 / q8_0</dd>
+            <dt>上下文</dt>
+            <dd>8192</dd>
+            <dt>并行 slot</dt>
+            <dd>1</dd>
+            <dt>视觉 Token</dt>
+            <dd>1024 / 1024</dd>
+          </dl>
+        </div>
+
+        <div class="warning">
+          <strong>显存余量很小：</strong>
+          最快配置测试时整卡占用 11873 MiB，理论只剩约 415 MiB。
+          如果后台运行 NVIDIA Broadcast、Wallpaper Engine、视频应用、GPU Overlay
+          或重度浏览器页面，可能出现速度骤降、共享显存分页或 OOM。
+          不稳定时应改用 <code>-ngl auto -fitt 256</code> 的保守配置。
+        </div>
+
+        <p class="method-note">
+          数据来源：本机调优报告《llama.cpp CUDA 视觉模型性能排查与调优报告》。
+          <code>llama-bench</code>、短测、服务端 API 长测和真实图片请求属于不同负载，
+          不能把所有数值视为完全相同的基准。参数选择应优先参考 384 Token 服务端长测和真实视觉请求。
+        </p>
+      </section>
+
+      <footer class="data-footer">
+        <span>测试与整理：Tuo Wen</span>
+        <a
+          href="https://www.youtube.com/@TuoWen-0528"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          YouTube @TuoWen-0528
+        </a>
+      </footer>
+    </main>
+
+    <script>
+      (() => {
+        const filter = document.querySelector("#test-filter");
+        const body = document.querySelector("#performance-body");
+        const status = document.querySelector("#table-status");
+        const sortButtons = document.querySelectorAll("[data-sort]");
+        let sortDirection = -1;
+        let activeSort = "";
+
+        const updateFilter = () => {
+          const selected = filter.value;
+          let visible = 0;
+
+          [...body.rows].forEach((row) => {
+            const show = selected === "all" || row.dataset.type === selected;
+            row.hidden = !show;
+            if (show) visible += 1;
+          });
+
+          status.textContent =
+            selected === "all"
+              ? `显示全部 ${visible} 条测试记录`
+              : `显示 ${selected} ${visible} 条测试记录`;
+        };
+
+        const sortRows = (key) => {
+          sortDirection = activeSort === key ? sortDirection * -1 : -1;
+          activeSort = key;
+
+          const rows = [...body.rows];
+          rows.sort((a, b) => {
+            const aValue = Number(a.dataset[key] || 0);
+            const bValue = Number(b.dataset[key] || 0);
+            return (aValue - bValue) * sortDirection;
+          });
+
+          rows.forEach((row) => body.append(row));
+          updateFilter();
+        };
+
+        filter.addEventListener("change", updateFilter);
+        sortButtons.forEach((button) => {
+          button.addEventListener("click", () => sortRows(button.dataset.sort));
+        });
+      })();
+    </script>
+  </body>
+</html>

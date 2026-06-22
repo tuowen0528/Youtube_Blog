@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="在 Windows 使用 llama.cpp、CUDA 13.3 和 RTX 3060 12GB 本地部署 Qwen3.6-35B-A3B Uncensored IQ2_M 模型的重制教程，包含 CUDA DLL、视觉模型、启动参数和性能测试。"
+    >
+    <meta name="theme-color" content="#f7f6f3">
+    <title>旧版有坑！Qwen3.6 35B越狱版本地部署【重制教程】｜12GB显存实测</title>
+    <link rel="icon" href="../../assests/images/channel-avatar.jpg" type="image/jpeg">
+    <link rel="stylesheet" href="../../assests/css/style.css">
+    <script src="../../assests/js/code-copy.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#article-content">跳到文章正文</a>
+
+    <header class="article-header">
+      <a class="back-link" href="../../index.html">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M16 10H5M9 6l-4 4 4 4"/>
+        </svg>
+        返回全部教程
+      </a>
+      <a
+        class="channel-link"
+        href="https://www.youtube.com/@TuoWen-0528"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Tuo Wen
+      </a>
+    </header>
+
+    <main class="article-layout" id="article-content">
+      <article class="article">
+        <header class="article-hero">
+          <p class="eyebrow">Qwen3.6 · llama.cpp · CUDA · Windows</p>
+          <h1>旧版有坑！Qwen3.6 35B越狱版本地部署【重制教程】｜12GB显存实测</h1>
+          <p class="article-lead">
+            本期重新演示在 Windows 上使用 llama.cpp 部署
+            Qwen3.6-35B-A3B Uncensored 模型。测试电脑使用 RTX 3060 12GB，
+            选择 IQ2_M 量化版本，并补齐上期教程遗漏的 CUDA DLL 和参数配置。
+          </p>
+          <div class="article-meta">
+            <span>发布于 2026 年 6 月 22 日</span>
+            <span>视频时长 6:08</span>
+            <span>Windows · NVIDIA CUDA</span>
+          </div>
+          <a
+            class="video-link"
+            href="https://www.youtube.com/watch?v=Ds7vCXd4v5I"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            在 YouTube 观看本期视频
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 10h11M11 6l4 4-4 4"/>
+            </svg>
+          </a>
+        </header>
+
+        <div class="warning">
+          <strong>这篇文章替代旧版部署参数。</strong>
+          上一期教程中的启动脚本没有根据显存和并行 slot 做完整调优，
+          可能出现 CUDA 未加载、显存被挤满或生成速度很低的问题。
+          如果你已经按旧教程部署，建议保留模型文件，重新下载匹配版本的 llama.cpp 与 CUDA DLL，
+          再使用本文脚本。
+        </div>
+
+        <section class="article-section" id="preparation">
+          <h2>开始前要准备什么</h2>
+          <ul class="check-list">
+            <li>Windows 10 或 Windows 11 电脑，并能正常解压 ZIP 文件。</li>
+            <li>NVIDIA 显卡和可用的 NVIDIA 驱动。视频测试环境是 RTX 3060 12GB。</li>
+            <li>至少约 13GB 的可用磁盘空间，用于 IQ2_M 主模型、视觉模型和 llama.cpp。</li>
+            <li>下载大文件时保持网络稳定。Hugging Face 模型文件超过 10GB。</li>
+            <li>部署前关闭占用大量显存的软件，尤其是其他 AI 程序、NVIDIA Broadcast、录屏和重度浏览器页面。</li>
+          </ul>
+
+          <div class="notice">
+            <strong>显存不同，模型选择也应不同。</strong>
+            本文的 IQ2_M 与启动参数是针对 12GB 显存测试的。
+            显存更大时可以考虑更高质量的量化；显存更小时，即使模型能启动，也可能频繁使用共享内存而变慢。
+          </div>
+
+          <div class="resource-box">
+            <h3>本期资源</h3>
+            <ul>
+              <li>
+                <a href="https://github.com/ggml-org/llama.cpp" target="_blank" rel="noopener noreferrer">
+                  llama.cpp 官方 GitHub 仓库
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/ggml-org/llama.cpp/releases" target="_blank" rel="noopener noreferrer">
+                  llama.cpp 官方 Releases 下载页
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://huggingface.co/HauhauCS/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Qwen3.6-35B-A3B Uncensored 模型页面
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://huggingface.co/HauhauCS/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive/resolve/main/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-IQ2_M.gguf?download=true"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  IQ2_M 主模型官方下载
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://huggingface.co/HauhauCS/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive/resolve/main/mmproj-Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-f16.gguf?download=true"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  F16 视觉投影模型官方下载
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  llama-server 官方参数文档
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <nav class="article-toc" aria-labelledby="toc-title">
+          <h2 id="toc-title">视频时间轴</h2>
+          <ol>
+            <li><a href="#old-problem"><time>00:00</time>开场与上期部署问题</a></li>
+            <li><a href="#llama-cpp"><time>00:28</time>准备 llama.cpp</a></li>
+            <li><a href="#download-cuda"><time>00:43</time>下载 Windows CUDA 版本</a></li>
+            <li><a href="#download-model"><time>01:19</time>下载 Qwen3.6 35B 越狱模型</a></li>
+            <li><a href="#quantization"><time>01:42</time>12GB 显存量化版本选择</a></li>
+            <li><a href="#organize-files"><time>02:15</time>整理模型与部署文件</a></li>
+            <li><a href="#cuda-dll"><time>03:00</time>配置 CUDA DLL</a></li>
+            <li><a href="#start-script"><time>03:48</time>修改启动脚本</a></li>
+            <li><a href="#first-load"><time>04:33</time>首次加载模型</a></li>
+            <li><a href="#webui"><time>05:02</time>打开 llama.cpp WebUI</a></li>
+            <li><a href="#test"><time>05:18</time>对话与图片识别实测</a></li>
+            <li><a href="#summary"><time>05:55</time>总结</a></li>
+          </ol>
+        </nav>
+
+        <section class="article-section" id="old-problem">
+          <div class="section-title-row">
+            <span class="timestamp">00:00</span>
+            <h2>为什么要重做上一期教程</h2>
+          </div>
+          <p>
+            上一期已经能够把模型启动起来，但“能运行”不代表配置正确。
+            当 CUDA 运行库缺失时，脚本即使写了 GPU 层参数，llama.cpp 仍可能只使用 CPU；
+            默认创建多个服务 slot、上下文过大或显存贴边，也会让 CUDA 推理变得很慢。
+          </p>
+          <p>
+            本次重新测试后，12GB 显存环境采用 IQ2_M 主模型、F16 视觉投影模型、Q8 KV、
+            8192 上下文和单 slot。后文会给出完整脚本，也会链接到独立性能数据页面。
+          </p>
+        </section>
+
+        <section class="article-section" id="llama-cpp">
+          <div class="section-title-row">
+            <span class="timestamp">00:28</span>
+            <h2>打开 llama.cpp 官方仓库</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>进入官方 GitHub 项目</h3>
+              <p>
+                浏览器打开
+                <a href="https://github.com/ggml-org/llama.cpp" target="_blank" rel="noopener noreferrer">
+                  ggml-org/llama.cpp
+                </a>。不要从不明网盘下载经过修改的可执行文件。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/llama-cpp-repository.webp"
+                  alt="llama.cpp 官方 GitHub 仓库首页"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>在仓库右侧找到 Releases 入口。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>点击 Releases</h3>
+              <p>
+                点击仓库右侧的 <span class="ui-label">Releases</span>。
+                视频录制时最新版本为 <code>b9754</code>。版本号会持续变化，
+                读者应优先选择页面当前标记为 Latest 的稳定发布版。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/latest-release.webp"
+                  alt="llama.cpp Releases 页面中的 b9754 最新版本"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>文章记录的是视频操作，下载时以当前 Releases 页面为准。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="download-cuda">
+          <div class="section-title-row">
+            <span class="timestamp">00:43</span>
+            <h2>下载 Windows CUDA 主程序和运行库</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>向下找到 Windows x64 下载项</h3>
+              <p>
+                展开当前版本的 Assets，向下找到 Windows 区域。
+                NVIDIA 显卡选择名称中带有 <code>win-cuda</code> 的 x64 压缩包。
+                视频选择 CUDA 13 版本，文件名通常类似：
+              </p>
+              <pre class="code-block"><code>llama-b9754-bin-win-cuda-13.3-x64.zip</code></pre>
+              <p>
+                版本号可能已经更新，文件名前半部分会不同。AMD、Intel 或纯 CPU 用户不能照搬这个下载项。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/windows-cuda-download.webp"
+                  alt="llama.cpp Releases 中的 Windows x64 CUDA 13 下载项"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>视频电脑使用 NVIDIA 显卡，因此选择 Windows x64 CUDA 13。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>同时下载匹配的 CUDA DLL</h3>
+              <p>
+                只下载 llama.cpp 主压缩包还不够。继续找到同一版本下的
+                <span class="ui-label">CUDA 13.3 DLLs</span>，文件名通常类似：
+              </p>
+              <pre class="code-block"><code>cudart-llama-bin-win-cuda-13.3-x64.zip</code></pre>
+              <p>
+                两个压缩包的 CUDA 大版本必须匹配。主程序使用 CUDA 13 时，不要混用 CUDA 12 的 DLL。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/cuda-dll-download.webp"
+                  alt="llama.cpp Releases 中的 CUDA 13.3 DLLs 下载链接"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>CUDA DLL 缺失是旧配置实际退回 CPU 的主要原因。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="download-model">
+          <div class="section-title-row">
+            <span class="timestamp">01:19</span>
+            <h2>打开 Qwen3.6 35B Uncensored 模型页面</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>进入 Hugging Face 模型仓库</h3>
+              <p>
+                打开
+                <a
+                  href="https://huggingface.co/HauhauCS/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  HauhauCS/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive
+                </a>。
+                视频画面中该模型已有数百万次下载。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/hugging-face-model-page.webp"
+                  alt="Hugging Face 上的 Qwen3.6 35B Uncensored 模型页面"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>文件列表中包含多种量化主模型和一个视觉投影模型。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>进入文件列表</h3>
+              <p>
+                点击 <span class="ui-label">Files and versions</span>。
+                GGUF 文件较大，点击下载后等待浏览器完成，不要只留下未完成的临时文件。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="quantization">
+          <div class="section-title-row">
+            <span class="timestamp">01:42</span>
+            <h2>12GB 显存选择 IQ2_M 和 F16 mmproj</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>下载 IQ2_M 主模型</h3>
+              <p>
+                视频电脑是 RTX 3060 12GB，因此选择约 10.86 GiB 的 IQ2_M：
+              </p>
+              <pre class="code-block"><code>Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-IQ2_M.gguf</code></pre>
+              <p>
+                点击文件右侧下载按钮。IQ2_M 用较低量化精度换取更小体积，
+                让主模型、视觉模型、KV Cache 和 CUDA 缓冲尽量放进 12GB 显存。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/iq2-model-selection.webp"
+                  alt="Hugging Face 文件列表中选择 IQ2_M 主模型"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>不要因为名称相似而下载 IQ3_M；它约 14.38 GiB，不适合本文的 12GB 全 GPU 配置。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>下载视觉投影模型</h3>
+              <p>
+                为了让 WebUI 能识别图片，还要下载约 0.84 GiB 的 F16 mmproj：
+              </p>
+              <pre class="code-block"><code>mmproj-Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-f16.gguf</code></pre>
+              <figure class="article-figure">
+                <img
+                  src="images/vision-mmproj-selection.webp"
+                  alt="Hugging Face 文件列表中的 F16 视觉投影模型"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>没有 mmproj 时，语言模型仍能对话，但不能完成本文的图片理解测试。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="organize-files">
+          <div class="section-title-row">
+            <span class="timestamp">02:15</span>
+            <h2>解压 llama.cpp 并整理模型文件</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>解压 llama.cpp 主压缩包</h3>
+              <p>
+                在下载目录找到 <code>llama-...-bin-win-cuda-13.3-x64.zip</code>，
+                右键选择 <span class="ui-label">全部解压</span>，或使用自己熟悉的解压软件。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/extract-llama-cpp.webp"
+                  alt="在资源管理器中解压 llama.cpp Windows CUDA 压缩包"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>后续所有文件都放进解压后的 llama.cpp 根目录。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>在根目录新建 models 文件夹</h3>
+              <p>
+                双击进入解压后的目录。在空白位置右键新建文件夹，名称填写：
+              </p>
+              <pre class="code-block"><code>models</code></pre>
+              <figure class="article-figure">
+                <img
+                  src="images/create-models-folder.webp"
+                  alt="在 llama.cpp 根目录新建 models 文件夹"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>文件夹名称要与启动脚本中的 <code>models\...</code> 路径一致。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>把两个 GGUF 文件移入 models</h3>
+              <p>
+                把刚下载的 IQ2_M 主模型和 F16 mmproj 一起移动到
+                <code>models</code> 文件夹。整理完成后的关键目录结构如下：
+              </p>
+              <pre class="code-block"><code>llama-b9754-bin-win-cuda-13.3-x64/
+├── llama-server.exe
+├── start.bat
+├── models/
+│   ├── Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-IQ2_M.gguf
+│   └── mmproj-Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-f16.gguf
+└── 其他 llama.cpp 文件</code></pre>
+              <figure class="article-figure">
+                <img
+                  src="images/move-model-files.webp"
+                  alt="把 Qwen3.6 主模型和视觉模型移动到 models 文件夹"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>两个文件名很长，移动后不要改名，除非同步修改启动脚本。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="cuda-dll">
+          <div class="section-title-row">
+            <span class="timestamp">03:00</span>
+            <h2>把 CUDA 13.3 DLL 复制到程序根目录</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>解压 CUDA DLL 压缩包</h3>
+              <p>
+                找到另一个下载的
+                <code>cudart-llama-bin-win-cuda-13.3-x64.zip</code> 并解压。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/extract-cuda-dll-package.webp"
+                  alt="解压 llama.cpp CUDA 13.3 DLL 压缩包"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>这个包体积明显大于普通的几个配置文件，因为包含 cuBLAS 运行库。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>选中三个 DLL</h3>
+              <p>进入解压后的目录，应看到以下文件：</p>
+              <pre class="code-block"><code>cublas64_13.dll
+cublasLt64_13.dll
+cudart64_13.dll</code></pre>
+              <p>
+                选中三个文件后按 <kbd>Ctrl</kbd> + <kbd>C</kbd>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/select-cuda-dll-files.webp"
+                  alt="选中 CUDA 13.3 压缩包中的三个 DLL 文件"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>三个文件缺一不可，尤其是 <code>cublas64_13.dll</code>。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>粘贴到 llama-server.exe 同级目录</h3>
+              <p>
+                回到 llama.cpp 根目录，也就是能看到
+                <code>llama-server.exe</code> 的位置，按
+                <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/paste-cuda-dll-files.webp"
+                  alt="把三个 CUDA DLL 粘贴到 llama.cpp 根目录"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>DLL 不能放进 models 文件夹，必须与 llama-server.exe 位于同一层。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>可选：先检查 CUDA 是否被识别</h3>
+              <p>
+                在根目录打开 PowerShell，运行：
+              </p>
+              <pre class="code-block"><code>.\llama-server.exe --list-devices</code></pre>
+              <p>正常时应看到类似：</p>
+              <pre class="code-block"><code>CUDA0: NVIDIA GeForce RTX 3060</code></pre>
+              <p>
+                如果只出现 <code>Available devices:</code> 而没有 CUDA0，
+                先不要继续跑模型。检查主程序与 DLL 的 CUDA 版本是否匹配，并更新 NVIDIA 驱动。
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="start-script">
+          <div class="section-title-row">
+            <span class="timestamp">03:48</span>
+            <h2>创建经过调优的 start.bat</h2>
+          </div>
+          <p>
+            视频把准备好的启动脚本拖入 llama.cpp 根目录。
+            你也可以右键新建文本文件，将文件名改为 <code>start.bat</code>，
+            再右键选择 <span class="ui-label">编辑</span>，写入以下完整内容。
+          </p>
+
+          <pre class="code-block"><code>@echo off
+chcp 65001 >nul
+cd /d "%~dp0"
+
+llama-server.exe ^
+-m "models\Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-IQ2_M.gguf" ^
+--mmproj "models\mmproj-Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-f16.gguf" ^
+--mmproj-offload ^
+--image-min-tokens 1024 ^
+--image-max-tokens 1024 ^
+-ngl all ^
+--fit off ^
+--flash-attn on ^
+--cache-type-k q8_0 ^
+--cache-type-v q8_0 ^
+-c 8192 ^
+-n 4096 ^
+-np 1 ^
+--host 127.0.0.1 ^
+--port 8080
+
+pause</code></pre>
+
+          <figure class="article-figure">
+            <img
+              src="images/add-start-script.webp"
+              alt="记事本中显示经过调优的 llama.cpp start.bat 启动脚本"
+              width="1440"
+              height="810"
+              loading="lazy"
+            >
+            <figcaption>保存时确认扩展名是 .bat，而不是隐藏扩展名后的 start.bat.txt。</figcaption>
+          </figure>
+
+          <div class="resource-box">
+            <h3>主要参数为什么这样设置</h3>
+            <ul>
+              <li><code>--mmproj-offload</code>：把视觉投影计算卸载到 GPU。</li>
+              <li><code>--image-min-tokens 1024</code> 与 <code>--image-max-tokens 1024</code>：减少普通图片首轮处理时间。</li>
+              <li><code>-ngl all --fit off</code>：尽可能把主模型层放到 GPU，并关闭自动显存适配。</li>
+              <li><code>--cache-type-k q8_0</code> 与 <code>--cache-type-v q8_0</code>：本机实测比 Q4 KV 更快。</li>
+              <li><code>-c 8192</code>：在 12GB 显存环境保留实用上下文长度。</li>
+              <li><code>-np 1</code>：只创建一个服务 slot，避免默认多个 slot 增加 KV 与显存压力。</li>
+              <li><code>--host 127.0.0.1</code>：只允许当前电脑访问，不直接暴露到局域网。</li>
+            </ul>
+          </div>
+
+          <div class="warning">
+            <strong>脚本中的文件名必须与本机完全一致。</strong>
+            如果你下载了其他量化版本、给文件改过名，或 llama.cpp 更新后参数发生变化，
+            应同步修改脚本。命令窗口提示“failed to open model”时，首先检查路径和文件名。
+          </div>
+
+          <div class="resource-box">
+            <h3>查看完整参数测试数据</h3>
+            <p>
+              我使用 RTX 3060 12GB 对 CPU、自动适配、强制全层、上下文长度、
+              显存占用和视觉 Token 做了多轮对比。独立页面包含柱状图、前后对比和可排序明细表。
+            </p>
+          <a
+            class="video-link"
+            href="../qwen36-cuda-performance-data/qwen36-cuda-performance-data.html"
+            >
+              打开 Qwen3.6 CUDA 性能数据
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 10h11M11 6l4 4-4 4"/>
+            </svg>
+          </a>
+          <div class="resource-actions">
+            <a
+              class="download-link"
+              href="downloads/llama-cuda-vision-tuning-report-2026-06-22.md"
+              download
+            >
+              下载原始调优报告
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 3v9M6.5 8.5 10 12l3.5-3.5M4 16h12"/>
+              </svg>
+            </a>
+            <a
+              class="download-link"
+              href="downloads/start.bat"
+              download
+            >
+              下载原始 start.bat
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 3v9M6.5 8.5 10 12l3.5-3.5M4 16h12"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        </section>
+
+        <section class="article-section" id="first-load">
+          <div class="section-title-row">
+            <span class="timestamp">04:33</span>
+            <h2>双击 start.bat 首次加载模型</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>运行启动脚本</h3>
+              <p>
+                在 llama.cpp 根目录双击 <code>start.bat</code>。
+                Windows 如果弹出安全提示，先确认文件确实来自你刚下载的官方包和自己创建的脚本。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/run-start-script.webp"
+                  alt="在 llama.cpp 根目录双击运行 start.bat"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>不要在程序运行期间移动模型或关闭命令窗口。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>等待模型载入</h3>
+              <p>
+                首次加载十几 GB 的模型需要时间。命令窗口会依次显示 CUDA 设备、模型元数据、
+                GPU 层和服务监听地址。磁盘较慢时等待会更久。
+              </p>
+            </li>
+            <li>
+              <h3>确认出现本地地址</h3>
+              <p>
+                加载完成后，日志会显示 WebUI 监听地址，通常是：
+              </p>
+              <pre class="code-block"><code>http://127.0.0.1:8080</code></pre>
+              <p>
+                复制这个地址。只要命令窗口保持运行，本机浏览器就可以访问。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/model-loaded-local-url.webp"
+                  alt="llama-server 模型加载完成并显示本地访问地址"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>日志中还应看到 CUDA 设备和模型加载成功的信息。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="webui">
+          <div class="section-title-row">
+            <span class="timestamp">05:02</span>
+            <h2>在浏览器打开 llama.cpp WebUI</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>粘贴本地地址</h3>
+              <p>
+                在浏览器地址栏粘贴 <code>http://127.0.0.1:8080</code> 并回车。
+                页面应显示 llama.cpp 自带的聊天界面。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/llama-cpp-webui.webp"
+                  alt="浏览器打开 llama.cpp 本地 WebUI"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>如果浏览器打不开，检查命令窗口是否仍在运行，以及端口是否被其他程序占用。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="test">
+          <div class="section-title-row">
+            <span class="timestamp">05:18</span>
+            <h2>测试文字对话和图片识别</h2>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>先发送一句简单文字</h3>
+              <p>
+                在输入框中发送“你好”等短消息，确认模型能正常返回内容。
+                视频录屏现场显示生成速度约为 <code>16.87 t/s</code>。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/text-generation-speed.webp"
+                  alt="llama.cpp WebUI 完成文字回答并显示 16.87 token 每秒"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>录屏、浏览器和后台程序都会占用 GPU；这个现场数值不等于独立基准测试。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>上传一张图片</h3>
+              <p>
+                点击输入框附近的附件按钮，选择一张图片，然后输入“这张图片讲了什么”等问题并发送。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/upload-test-image.webp"
+                  alt="在 llama.cpp WebUI 中上传图片进行视觉识别测试"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>图片缩略图出现在消息中，说明文件已经附加到请求。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>检查图片描述是否合理</h3>
+              <p>
+                模型应根据图片生成文字描述。视频中成功识别并列出画面内容，
+                证明 F16 mmproj 已加载，视觉请求可以正常工作。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/vision-response.webp"
+                  alt="Qwen3.6 在 llama.cpp WebUI 中生成图片内容描述"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>视觉模型能运行不代表每次识别都准确，重要信息仍需人工核对。</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>查看视觉回答速度</h3>
+              <p>
+                视频现场的图片回答显示约 <code>15.57 t/s</code>。
+                独立调优报告使用固定请求和预热流程测试时，图片后的文本生成约为
+                <code>65.42 t/s</code>；两者的录屏状态、后台显存占用和测试条件不同，不能直接视为同一基准。
+              </p>
+              <figure class="article-figure">
+                <img
+                  src="images/vision-generation-speed.webp"
+                  alt="llama.cpp WebUI 图片回答完成并显示 15.57 token 每秒"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                >
+                <figcaption>判断参数优劣时，请优先使用相同提示、相同输出长度和相同后台环境进行多轮测试。</figcaption>
+              </figure>
+            </li>
+          </ol>
+        </section>
+
+        <section class="article-section" id="troubleshooting">
+          <h2>常见问题和故障排查</h2>
+
+          <div class="resource-box">
+            <h3>生成速度仍然只有约 10–15 t/s</h3>
+            <ul>
+              <li>运行 <code>.\llama-server.exe --list-devices</code>，确认存在 CUDA0。</li>
+              <li>检查三个 CUDA 13 DLL 是否与 <code>llama-server.exe</code> 位于同一目录。</li>
+              <li>确认 DLL 与下载的 llama.cpp CUDA 大版本一致。</li>
+              <li>查看任务管理器或 <code>nvidia-smi</code>，关闭其他占用显存的程序。</li>
+              <li>检查脚本是否保留 <code>-np 1</code>，避免默认多个 slot 挤占显存。</li>
+              <li>首次请求可能包含 CUDA 预热，连续测试两三次后再记录稳定速度。</li>
+            </ul>
+          </div>
+
+          <div class="resource-box">
+            <h3>启动时显存不足或程序退出</h3>
+            <ul>
+              <li>先关闭所有其他 GPU 应用并重新启动脚本。</li>
+              <li>把 <code>-ngl all --fit off</code> 改为 <code>-ngl auto -fitt 256</code>。</li>
+              <li>仍然失败时降低上下文，例如把 <code>-c 8192</code> 改为 <code>-c 4096</code>。</li>
+              <li>确认下载的是 IQ2_M，而不是体积更大的 IQ3_M。</li>
+            </ul>
+          </div>
+
+          <div class="resource-box">
+            <h3>模型能聊天，但不能识别图片</h3>
+            <ul>
+              <li>确认 F16 mmproj 文件位于 <code>models</code> 文件夹。</li>
+              <li>确认 <code>--mmproj</code> 后的文件名和本机文件完全一致。</li>
+              <li>启动日志中不应出现 mmproj 文件无法打开的错误。</li>
+              <li>换一张普通 JPG 或 PNG 测试，排除图片格式问题。</li>
+            </ul>
+          </div>
+
+          <div class="resource-box">
+            <h3>图片识别首轮等待很久</h3>
+            <ul>
+              <li>确认脚本包含 <code>--image-min-tokens 1024</code> 和 <code>--image-max-tokens 1024</code>。</li>
+              <li>1024 偏向速度，适合普通场景描述；小字 OCR、密集表格和精细定位可能需要更高值。</li>
+              <li>报告中的 1920 × 1200 测试图从约 36.4 秒降到 11.65 秒，但不同图片会有差异。</li>
+            </ul>
+          </div>
+
+          <div class="resource-box">
+            <h3>双击 start.bat 一闪而过</h3>
+            <ul>
+              <li>确认脚本末尾保留 <code>pause</code>，这样错误不会立即关闭。</li>
+              <li>打开文件扩展名显示，检查是否误保存为 <code>start.bat.txt</code>。</li>
+              <li>检查命令中的引号、续行符 <code>^</code> 和模型文件名。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="article-section" id="summary">
+          <div class="section-title-row">
+            <span class="timestamp">05:55</span>
+            <h2>完成后的正确状态</h2>
+          </div>
+          <ul class="check-list">
+            <li><code>--list-devices</code> 可以看到 NVIDIA CUDA0。</li>
+            <li>主模型与 mmproj 都位于根目录下的 <code>models</code> 文件夹。</li>
+            <li>三个 CUDA 13.3 DLL 与 <code>llama-server.exe</code> 同级。</li>
+            <li>启动脚本使用单 slot、Q8 KV、8192 上下文和 1024 视觉 Token。</li>
+            <li>浏览器可以打开 <code>http://127.0.0.1:8080</code>。</li>
+            <li>文字对话和图片识别都能完成。</li>
+          </ul>
+        </section>
+
+        <section class="article-section" id="references">
+          <h2>官方资料与相关链接</h2>
+          <ul>
+            <li>
+              <a href="https://github.com/ggml-org/llama.cpp/releases" target="_blank" rel="noopener noreferrer">
+                llama.cpp Releases
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                llama-server 参数说明
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://huggingface.co/HauhauCS/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                HauhauCS Qwen3.6-35B-A3B Uncensored 模型仓库
+              </a>
+            </li>
+            <li>
+              <a href="../qwen36-cuda-performance-data/qwen36-cuda-performance-data.html">
+                本机 CUDA 参数性能测试数据
+              </a>
+            </li>
+          </ul>
+          <p class="article-note">
+            “Uncensored”是第三方模型作者使用的名称，不代表输出一定正确、安全或合法。
+            本地运行模型时仍应保护隐私，核对结果，并遵守所在地法律法规、模型许可证和服务条款。
+          </p>
+        </section>
+
+        <footer class="article-footer">
+          <a class="back-link" href="../../index.html">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M16 10H5M9 6l-4 4 4 4"/>
+            </svg>
+            返回全部教程
+          </a>
+          <a
+            class="channel-link"
+            href="https://www.youtube.com/@TuoWen-0528"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            订阅 Tuo Wen
+          </a>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>
