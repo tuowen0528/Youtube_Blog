@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="864" viewBox="0 0 1536 864" role="img" aria-labelledby="deliveryTitle deliveryDesc">
+  <title id="deliveryTitle">网页作业交付清单</title>
+  <desc id="deliveryDesc">用于交付网页修改任务前检查文件、预览、说明和收款的清单示意图。</desc>
+  <rect width="1536" height="864" rx="48" fill="#101820"/>
+  <g font-family="Arial,'Microsoft YaHei','PingFang SC',sans-serif">
+    <text x="96" y="118" fill="#ffffff" font-size="52" font-weight="900">交付前不要只发一个文件</text>
+    <text x="96" y="170" fill="#aebbb6" font-size="24">把客户真正需要验收的东西一次整理好，减少返工。</text>
+    <rect x="96" y="236" width="588" height="500" rx="32" fill="#ffffff"/>
+    <text x="142" y="300" fill="#15231f" font-size="32" font-weight="900">交付包内容</text>
+    <g font-size="25" fill="#15231f">
+      <circle cx="156" cy="358" r="15" fill="#10a37f"/><text x="190" y="367">完整项目文件夹</text>
+      <circle cx="156" cy="428" r="15" fill="#10a37f"/><text x="190" y="437">可直接打开的 index.html</text>
+      <circle cx="156" cy="498" r="15" fill="#10a37f"/><text x="190" y="507">已修改的姓名、班级、图片或内容</text>
+      <circle cx="156" cy="568" r="15" fill="#10a37f"/><text x="190" y="577">预览截图或录屏</text>
+      <circle cx="156" cy="638" r="15" fill="#10a37f"/><text x="190" y="647">简短说明：怎么打开、改了哪里</text>
+    </g>
+    <rect x="780" y="236" width="660" height="500" rx="32" fill="#16252f" stroke="#284250" stroke-width="3"/>
+    <rect x="840" y="300" width="280" height="168" rx="22" fill="#0e151c" stroke="#3d5a67"/>
+    <rect x="870" y="336" width="220" height="24" rx="12" fill="#10a37f"/>
+    <rect x="870" y="382" width="146" height="18" rx="9" fill="#6b7d87"/>
+    <rect x="870" y="420" width="180" height="18" rx="9" fill="#6b7d87"/>
+    <rect x="1148" y="300" width="190" height="168" rx="22" fill="#fff4d6"/>
+    <text x="1192" y="398" fill="#1e2522" font-size="54" font-weight="900">¥60</text>
+    <path d="M864 596h430" stroke="#10a37f" stroke-width="14" stroke-linecap="round"/>
+    <path d="M864 648h310" stroke="#f0b429" stroke-width="14" stroke-linecap="round"/>
+    <text x="840" y="552" fill="#ffffff" font-size="32" font-weight="900">验收通过后再复盘</text>
+    <text x="840" y="696" fill="#aebbb6" font-size="23">记录客户来源、报价、工时、返工点，下次才会更快。</text>
+  </g>
+</svg>

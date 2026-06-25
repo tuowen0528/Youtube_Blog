@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Tuo Wen 视频配套教程：用 AI 和 Codex 处理一个网页修改接单案例，从找客户、确认需求、远程协作到打包交付和收款复盘。"
+    >
+    <meta name="theme-color" content="#f7f6f3">
+    <title>我用AI帮大学生做网页作业，10分钟跑通一单赚60元｜找客户到交付完整教程</title>
+    <link rel="icon" href="../../assests/images/channel-avatar.jpg" type="image/jpeg">
+    <link rel="stylesheet" href="../../assests/css/style.css?v=20260625-1">
+    <script src="../../assests/js/code-copy.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#article-content">跳到文章正文</a>
+
+    <header class="article-header">
+      <a class="back-link" href="../../index.html">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M16 10H5M9 6l-4 4 4 4"/>
+        </svg>
+        返回全部教程
+      </a>
+      <a
+        class="channel-link"
+        href="https://www.youtube.com/@TuoWen-0528"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Tuo Wen
+      </a>
+    </header>
+
+    <main class="article-layout" id="article-content">
+      <article class="article">
+        <header class="article-hero">
+          <p class="eyebrow">AI 接单 · Codex · 网页修改 · 交付复盘</p>
+          <h1>我用AI帮大学生做网页作业，10分钟跑通一单赚60元｜找客户到交付完整教程</h1>
+          <p class="article-lead">
+            这期不是讲“灵感”和“鸡血”，而是拆一个很小但完整的真实流程：
+            怎么找到网页设计类需求，怎么确认对方要改什么，怎么借助 AI/Codex 快速完成网页文件修改，
+            最后怎么打包交付并收款。
+          </p>
+          <div class="article-meta">
+            <span>发布于 2026 年 6 月 25 日</span>
+            <span>视频时长 4:21</span>
+            <span>适合 AI 接单与网页入门变现参考</span>
+          </div>
+          <a
+            class="video-link"
+            href="https://youtu.be/4SHB78mkOrU"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            在 YouTube 观看本期视频
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 10h11M11 6l4 4-4 4"/>
+            </svg>
+          </a>
+        </header>
+
+        <div class="warning">
+          <strong>重要边界：这不是鼓励代写或作弊。</strong>
+          本文只作为学习辅导、网页修改实战和 AI 工作流演示。接任何学生相关任务前，都要确认对方课程规则允许外部帮助；
+          更推荐做“讲解、排错、格式整理、部署协助、代码理解辅导”，不要替别人完成违反学校规定的作业提交。
+        </div>
+
+        <figure class="article-figure">
+          <img
+            src="images/ai-freelance-workflow.png"
+            alt="AI 接单流程插图：需求确认、AI 开发、修改交付和 60 元收款"
+            width="1672"
+            height="941"
+            loading="lazy"
+          >
+          <figcaption>正文配图使用无人像流程插图和示意图，不使用口播人像截图。</figcaption>
+        </figure>
+
+        <section class="article-section" id="preparation">
+          <h2>开始前你要准备什么</h2>
+          <ul class="check-list">
+            <li>能打开和修改静态网页文件，至少知道 <code>index.html</code>、<code>css</code>、<code>images</code> 大概是什么。</li>
+            <li>一个 AI 编程工具。视频中核心思路是用 Codex/AI 读取项目文件、定位修改点、直接改代码。</li>
+            <li>一个本地编辑和预览环境，最简单就是浏览器双击打开 HTML 文件；复杂一点可以用 VS Code 或本地静态服务器。</li>
+            <li>必要时准备远程桌面工具，例如视频里提到的 ToDesk，用来在客户电脑上协助打开、检查和打包文件。</li>
+            <li>一份清晰的沟通模板：先确认需求、价格、交付物和是否允许外部辅导，再开始操作。</li>
+          </ul>
+
+          <div class="resource-box">
+            <h3>本期提到或可参考的工具</h3>
+            <ul>
+              <li>
+                <a href="https://developers.openai.com/codex" target="_blank" rel="noopener noreferrer">
+                  OpenAI Codex 官方说明
+                </a>
+              </li>
+              <li>
+                <a href="https://developers.openai.com/codex/app" target="_blank" rel="noopener noreferrer">
+                  Codex App 官方文档
+                </a>
+              </li>
+              <li>
+                <a href="https://developers.openai.com/codex/cli" target="_blank" rel="noopener noreferrer">
+                  Codex CLI 官方文档
+                </a>
+              </li>
+              <li>
+                <a href="https://www.todesk.com/" target="_blank" rel="noopener noreferrer">
+                  ToDesk 远程桌面官网
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <nav class="article-toc" aria-labelledby="toc-title">
+          <h2 id="toc-title">视频时间轴</h2>
+          <ol>
+            <li><a href="#idea"><time>00:00</time>AI 爆火后，普通人怎么找到赚钱思路</a></li>
+            <li><a href="#why-students"><time>00:35</time>为什么大学生网页设计/作业需求适合新手接单</a></li>
+            <li><a href="#confirm"><time>01:10</time>怎么沟通客户需求，确认文件和修改点</a></li>
+            <li><a href="#codex"><time>01:55</time>用 Codex / AI 工具打开远程桌面完成开发</a></li>
+            <li><a href="#delivery"><time>02:45</time>实战交付：修改信息、打包文件、发给客户</a></li>
+            <li><a href="#workflow"><time>03:35</time>为什么比起“豆包聊天”更推荐完整开发流程</a></li>
+            <li><a href="#payment"><time>04:05</time>收款复盘：一单 ¥60 的可复制思路</a></li>
+          </ol>
+        </nav>
+
+        <section class="article-section" id="idea">
+          <div class="section-title-row">
+            <span class="timestamp">00:00</span>
+            <h2>先判断：你不是要卖“AI 很火”，而是要卖结果</h2>
+          </div>
+          <p>
+            视频开头先点出一个现实问题：AI 很火，很多人也尝试过用 AI 赚钱，
+            但真正能赚到钱的人，通常不是把“我会用 AI”当卖点，而是把 AI 放进一个能交付的场景里。
+            本期选择的场景很小：帮别人处理一个网页设计类任务。
+          </p>
+          <p>
+            这个案例的关键不是“网页有多复杂”，而是整个链路跑通了：
+            找到需求、聊清楚任务、拿到文件、用 AI 完成修改、让对方验收、收款。
+            对新手来说，先跑通一单，比一上来追求高客单价更重要。
+          </p>
+
+          <figure class="article-figure">
+            <img
+              src="images/client-workflow.svg"
+              alt="AI 接单从需求到交付的完整流程图"
+              width="1536"
+              height="864"
+              loading="lazy"
+            >
+            <figcaption>接单不是一句提示词，而是一条完整的交付链路。</figcaption>
+          </figure>
+        </section>
+
+        <section class="article-section" id="why-students">
+          <div class="section-title-row">
+            <span class="timestamp">00:35</span>
+            <h2>为什么网页设计类需求适合新手练手</h2>
+          </div>
+          <p>
+            视频里提到，网页设计、简单前端页面、课程展示页这一类需求，对新手相对友好，
+            因为它们通常有几个特点：文件结构简单、结果容易预览、客户能直接看懂改没改好，
+            而且很多需求只是替换文字、图片、布局和样式。
+          </p>
+          <p>
+            但这类任务也最容易踩合规坑。建议你把服务定位成“技术辅导/页面修改协助”：
+            帮对方理解怎么改、帮忙排错、帮忙整理已有文件，而不是承诺“代写整份作业”。
+          </p>
+
+          <div class="resource-box">
+            <h3>更适合接的新手任务</h3>
+            <ul>
+              <li>已有网页文件，但图片路径错了、样式乱了，需要修复。</li>
+              <li>客户已经有课程要求和素材，只需要替换文字、图片、颜色或排版。</li>
+              <li>客户想知道怎么打开、怎么压缩、怎么提交网页文件。</li>
+              <li>客户想把一个静态页面做得更整洁，但不涉及数据库、登录、支付等后端功能。</li>
+            </ul>
+          </div>
+
+          <div class="notice">
+            <strong>不建议接的任务：</strong>
+            对方明确要求你完全代写、伪造学习过程、绕过学校规则，或者要求你使用账号代提交。
+            这些都不适合做，也不值得为了几十元承担风险。
+          </div>
+        </section>
+
+        <section class="article-section" id="confirm">
+          <div class="section-title-row">
+            <span class="timestamp">01:10</span>
+            <h2>沟通客户需求：先把任务缩小到能交付</h2>
+          </div>
+          <p>
+            视频中先从平台或社群里的需求入手，找到“网页设计”相关客户后，不是立刻报价，
+            而是先问清楚：对方手里有没有文件、需要改哪些内容、希望什么时候完成、是否需要远程协助。
+            这个步骤非常重要，因为网页任务最怕“客户以为很简单，实际文件缺一半”。
+          </p>
+
+          <ol class="steps">
+            <li>
+              <h3>确认对方是否已有文件</h3>
+              <p>
+                先让对方发项目压缩包或截图。至少要确认有没有 <code>index.html</code>，
+                有没有 <code>css</code>、<code>js</code>、<code>images</code> 等资源文件。
+              </p>
+            </li>
+            <li>
+              <h3>确认具体修改点</h3>
+              <p>
+                不要只听“帮我改一下网页”。要让对方列清楚：
+                改姓名、改班级、改图片、改标题、改颜色、修布局，还是要新增一个页面。
+              </p>
+            </li>
+            <li>
+              <h3>确认验收方式</h3>
+              <p>
+                最简单的验收方式是：你本地打开页面截图给对方看；对方确认后，你再发压缩包。
+                如果要远程到对方电脑上操作，必须获得明确同意，并且不要查看与任务无关的个人文件。
+              </p>
+            </li>
+            <li>
+              <h3>确认价格和付款节点</h3>
+              <p>
+                视频案例是一单 ¥60。小单可以先收部分定金，也可以约定“完成预览后付款、付款后发完整包”。
+                核心是别含糊：多少钱、做什么、什么时候交付，都要提前说清楚。
+              </p>
+            </li>
+          </ol>
+
+          <p>下面这段沟通模板可以直接复制后按实际情况改：</p>
+          <pre class="code-block"><code>你先把网页项目压缩包发我看一下，我需要确认：
+1. 是否有 index.html 和完整的 css / js / images 文件；
+2. 具体要修改哪些内容，例如姓名、班级、图片、标题、颜色或布局；
+3. 是否只是修改已有页面，不包含重新代写整份作业；
+4. 你希望什么时候完成，以及学校规则是否允许外部技术辅导。
+
+确认范围后我再报价，完成后会先发预览截图给你验收。</code></pre>
+        </section>
+
+        <section class="article-section" id="codex">
+          <div class="section-title-row">
+            <span class="timestamp">01:55</span>
+            <h2>用 Codex / AI 做开发：让 AI 直接看项目文件</h2>
+          </div>
+          <p>
+            视频里强调的重点是：不要只把一句需求丢给普通聊天机器人，然后复制一段完全脱离项目的代码。
+            更稳的做法是把项目文件交给 AI 编程工具，让它读取真实目录、定位真实文件、基于现有代码修改。
+          </p>
+          <p>
+            如果使用 Codex，思路是把客户发来的网页文件解压到一个单独工作目录里，
+            让 Codex 检查目录结构，再按客户需求逐项修改。这样 AI 不只是“写一段代码”，
+            而是在已有项目中完成真实开发任务。
+          </p>
+
+          <div class="resource-box">
+            <h3>推荐的本地项目整理方式</h3>
+            <pre class="code-block"><code>customer-web-task/
+├── original/        # 客户原始文件，保留不动
+├── working/         # 实际修改的副本
+└── delivery/        # 最终交付压缩包和说明</code></pre>
+          </div>
+
+          <p>给 Codex 的第一条任务可以这样写：</p>
+          <pre class="code-block"><code>请先阅读 working 文件夹里的网页项目结构，不要直接大改。
+帮我确认：
+1. 首页文件是哪一个；
+2. 样式文件和图片资源在哪里；
+3. 当前页面能否直接在浏览器打开；
+4. 根据客户要求，应该修改哪些文件。
+
+客户要求是：
+- 把页面中的个人信息替换成客户提供的信息；
+- 修复图片无法显示的问题；
+- 页面整体保持原风格，不要重写成完全不同的网站；
+- 修改后给我列出改动清单。</code></pre>
+
+          <p>
+            如果需要远程桌面协作，视频的思路是让客户打开远程工具，你在对方电脑上确认文件位置或直接协助操作。
+            这里一定要注意边界：只处理客户授权的文件夹，不保存对方的账号密码，不打开聊天记录、相册、浏览器隐私内容。
+          </p>
+
+          <div class="warning">
+            <strong>远程桌面安全提醒：</strong>
+            远程控制必须获得对方明确授权；操作过程中建议让对方全程观看。
+            任务完成后提醒对方关闭远程连接权限，删除临时验证码或取消临时授权。
+          </div>
+        </section>
+
+        <section class="article-section" id="delivery">
+          <div class="section-title-row">
+            <span class="timestamp">02:45</span>
+            <h2>实战交付：修改、预览、打包、发给客户</h2>
+          </div>
+          <p>
+            进入交付阶段后，不要只说“我改好了”。更专业的做法是让客户能快速确认：
+            页面哪里变了、怎么打开、最终文件在哪里。视频里的小单能够快速收款，
+            本质上就是因为交付结果很明确。
+          </p>
+
+          <ol class="steps">
+            <li>
+              <h3>先保留原始文件</h3>
+              <p>
+                客户发来的压缩包先放进 <code>original</code>，不要直接在原文件上改。
+                复制一份到 <code>working</code>，这样改错了还能回退。
+              </p>
+            </li>
+            <li>
+              <h3>按清单逐项修改</h3>
+              <p>
+                例如把示例姓名改成客户姓名、替换班级或学号、把图片换成客户提供的素材、
+                修正 HTML 中错误的图片路径。每改一项就本地打开页面检查一次。
+              </p>
+            </li>
+            <li>
+              <h3>生成预览截图</h3>
+              <p>
+                把浏览器打开后的页面截图发给客户，让客户先确认视觉结果。
+                如果客户只要求小改，不要在没有说明的情况下重做整个设计。
+              </p>
+            </li>
+            <li>
+              <h3>打包最终文件</h3>
+              <p>
+                确认无误后，把修改后的完整项目文件夹压缩成 ZIP。
+                不要只发一个 <code>index.html</code>，因为图片、CSS 和 JS 缺失后页面会坏。
+              </p>
+            </li>
+            <li>
+              <h3>附上打开说明</h3>
+              <p>
+                发文件时顺手告诉对方：解压后双击哪个 HTML 文件、不要随便移动图片文件夹、
+                如果页面乱码或图片不显示应该检查什么。
+              </p>
+            </li>
+          </ol>
+
+          <figure class="article-figure">
+            <img
+              src="images/delivery-checklist.svg"
+              alt="网页修改任务交付前检查清单"
+              width="1536"
+              height="864"
+            >
+            <figcaption>交付的重点是让客户能打开、能检查、能确认。</figcaption>
+          </figure>
+
+          <p>交付说明可以直接用下面这个模板：</p>
+          <pre class="code-block"><code>已完成修改，压缩包里是完整网页项目，请先解压再打开。
+
+打开方式：
+1. 解压整个文件夹；
+2. 双击 index.html 预览网页；
+3. 不要单独移动 images / css / js 文件夹，否则图片或样式可能无法显示。
+
+本次修改内容：
+- 已替换页面中的个人信息；
+- 已修复图片路径；
+- 已按要求调整页面展示内容；
+- 已本地预览确认页面可以打开。
+
+你先检查截图和文件，如果还有小问题我可以按刚才确认的范围继续调整。</code></pre>
+        </section>
+
+        <section class="article-section" id="workflow">
+          <div class="section-title-row">
+            <span class="timestamp">03:35</span>
+            <h2>为什么不建议只用“聊天式 AI”复制代码</h2>
+          </div>
+          <p>
+            视频中特意对比了普通聊天式 AI 和完整开发流程。普通聊天工具当然能写代码，
+            但它通常不知道客户项目里真实文件叫什么、图片放在哪里、CSS 选择器怎么命名。
+            你复制一段新代码进去，反而可能把原项目弄坏。
+          </p>
+          <p>
+            更推荐的流程是：让 AI 读真实项目、提出修改计划、修改真实文件、再本地预览。
+            这也是为什么这类小单看起来简单，但如果流程正确，交付速度会很快。
+          </p>
+
+          <div class="resource-box">
+            <h3>一条更稳的 AI 开发指令</h3>
+            <pre class="code-block"><code>请基于当前项目做最小修改，不要重写整个页面。
+要求：
+1. 保持原有 HTML 结构和 CSS 风格；
+2. 只修改客户明确要求的文字、图片和样式；
+3. 修改前先列出你准备改哪些文件；
+4. 修改后列出变更清单；
+5. 如果发现缺少图片或文件路径错误，先告诉我再做替代方案。</code></pre>
+          </div>
+        </section>
+
+        <section class="article-section" id="payment">
+          <div class="section-title-row">
+            <span class="timestamp">04:05</span>
+            <h2>收款复盘：一单 ¥60 为什么值得记录</h2>
+          </div>
+          <p>
+            视频最后展示的是这单已经完成并收款，金额是 ¥60。这个金额并不大，
+            但它证明了一个可复制的点：当你能把 AI 能力变成客户能验收的结果，就有机会从小单开始积累经验。
+          </p>
+          <p>
+            对新手来说，第一阶段不要只盯着“单价高不高”。更重要的是记录每一单的真实成本：
+            从沟通到交付花了多久，客户最容易卡在哪里，哪些需求适合接，哪些需求应该拒绝。
+            这些复盘会直接决定你下一单能不能更快、更稳。
+          </p>
+
+          <div class="resource-box">
+            <h3>每单结束后建议记录</h3>
+            <ul>
+              <li>客户从哪里来的：平台、社群、熟人推荐，还是短视频私信。</li>
+              <li>任务类型：修改静态网页、修图片路径、改样式、部署网站、讲解代码。</li>
+              <li>报价和实际耗时：例如 ¥60，用了 10 分钟还是 40 分钟。</li>
+              <li>返工原因：需求没问清、文件缺失、客户不会打开、还是自己改错。</li>
+              <li>下次模板：哪些话术、检查清单和 AI 提示词可以复用。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="article-section" id="faq">
+          <h2>常见问题和注意事项</h2>
+
+          <div class="resource-box">
+            <h3>没有前端基础，可以直接接这种单吗？</h3>
+            <p>
+              不建议一上来接超出能力范围的任务。你至少要会打开 HTML、知道图片路径为什么会坏、
+              能看懂 AI 修改了哪些文件。可以先从“修现有网页的小问题”开始。
+            </p>
+          </div>
+
+          <div class="resource-box">
+            <h3>客户只给截图，没有源文件怎么办？</h3>
+            <p>
+              先不要接“保证还原”的承诺。没有源文件就不是简单修改，而是重做页面。
+              要重新报价，并明确需要素材、文字、图片和验收标准。
+            </p>
+          </div>
+
+          <div class="resource-box">
+            <h3>远程桌面时要注意什么？</h3>
+            <p>
+              只操作客户授权的项目文件夹；不要查看与任务无关的内容；不要保存对方账号密码；
+              完成后提醒对方关闭远程控制权限。涉及隐私和课程文件时尤其要谨慎。
+            </p>
+          </div>
+
+          <div class="resource-box">
+            <h3>怎么避免变成违规代写？</h3>
+            <p>
+              先问清课程规则。服务可以是讲解、排错、协助修改、部署和学习辅导；
+              如果对方要求你从零完成并让他直接提交，应该拒绝或改成教学辅导形式。
+            </p>
+          </div>
+        </section>
+
+        <section class="article-section" id="references">
+          <h2>官方资料与相关链接</h2>
+          <ul>
+            <li>
+              <a href="https://youtu.be/4SHB78mkOrU" target="_blank" rel="noopener noreferrer">
+                本期 YouTube 视频
+              </a>
+            </li>
+            <li>
+              <a href="https://www.youtube.com/@TuoWen-0528" target="_blank" rel="noopener noreferrer">
+                Tuo Wen YouTube 频道
+              </a>
+            </li>
+            <li>
+              <a href="https://developers.openai.com/codex" target="_blank" rel="noopener noreferrer">
+                OpenAI Codex 官方文档入口
+              </a>
+            </li>
+            <li>
+              <a href="https://developers.openai.com/codex/app" target="_blank" rel="noopener noreferrer">
+                Codex App 官方文档
+              </a>
+            </li>
+            <li>
+              <a href="https://developers.openai.com/codex/cli" target="_blank" rel="noopener noreferrer">
+                Codex CLI 官方文档
+              </a>
+            </li>
+            <li>
+              <a href="https://www.todesk.com/" target="_blank" rel="noopener noreferrer">
+                ToDesk 远程桌面官网
+              </a>
+            </li>
+          </ul>
+          <p class="article-note">
+            本文记录的是视频中的实战思路。AI 接单时请遵守平台规则、学校课程规则、客户隐私要求和当地法律法规。
+          </p>
+        </section>
+
+        <footer class="article-footer">
+          <a class="back-link" href="../../index.html">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M16 10H5M9 6l-4 4 4 4"/>
+            </svg>
+            返回全部教程
+          </a>
+          <a
+            class="channel-link"
+            href="https://www.youtube.com/@TuoWen-0528"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            订阅 Tuo Wen
+          </a>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>
